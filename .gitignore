@@ -1,0 +1,14 @@
+packages/
+TripGallery.API/bin/
+TripGallery.API/obj/
+TripGallery.DTO/bin/
+TripGallery.DTO/obj/
+TripGallery.MVCClient/bin/
+TripGallery.MVCClient/obj/
+TripGallery.Repository/obj/
+TripGallery.Repository/bin/
+TripGallery.Constants/obj/
+TripGallery.Constants/bin/
+TripCompany.IdentityServer/obj/
+TripCompany.IdentityServer/bin/
+.vs/TripGallery/v15/.suo
