@@ -10,9 +10,27 @@ namespace TripCompany.IdentityServer.Config
 {
     public static class Clients
     {
+        // AllowedScopes By default a client has no access to any scopes - either specify the scopes explicitly here(recommended) - or set AllowAccessToAllScopes to true.
         public static IEnumerable<Client> Get()
-        { 
-            return new List<Client>(); 
+        {
+            return new[]
+            {
+                new Client
+                {
+                    ClientId = "tripgalleryclientcredentials",
+                    ClientName = "Trip Gallery (Client Credentials)",
+                    Flow = Flows.ClientCredentials,
+                    ClientSecrets = new List<Secret>()
+                    {
+                        new Secret(Constants.TripGalleryClientSecret.Sha256())
+                    },
+                    AllowAccessToAllScopes = true,
+                    AllowedScopes = new List<string>
+                    {
+                        "gallerymanagement"
+                    }
+                }
+            };
         }
     }
 }

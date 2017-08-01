@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IdentityModel.Client;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -15,7 +16,10 @@ namespace TripGallery.MVCClient.Helpers
 
         public static HttpClient GetClient()
         { 
-            HttpClient client = new HttpClient(); 
+            HttpClient client = new HttpClient();
+
+            var accessToken = RequestAccessTokenClientCredentials();
+            client.SetBearerToken(accessToken);
            
             client.BaseAddress = new Uri(Constants.TripGalleryAPI);
 
@@ -24,6 +28,25 @@ namespace TripGallery.MVCClient.Helpers
                 new MediaTypeWithQualityHeaderValue("application/json"));
 
             return client;
+        }
+        public static string RequestAccessTokenClientCredentials()
+        {
+            var cookie = HttpContext.Current.Request.Cookies.Get("TripGalleryCookie");
+
+            if(cookie != null && cookie["access_token"] != null)
+            {
+                return cookie["access_token"];
+            }
+
+            //create a Token Client 
+            var tokenClient = new TokenClient(Constants.TripGallerySTSTokenEndpoint, "tripgalleryclientcredentials", Constants.TripGalleryClientSecret);
+            var tokenResponse = tokenClient.RequestClientCredentialsAsync("gallerymanagement").Result;
+
+            TokenHelper.DecodeAndWrite(tokenResponse.AccessToken);
+
+            HttpContext.Current.Response.Cookies["TripGalleryCookie"]["access_token"] = tokenResponse.AccessToken;
+
+            return tokenResponse.AccessToken;
         }
  
     }

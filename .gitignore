@@ -12,3 +12,5 @@ TripGallery.Constants/bin/
 TripCompany.IdentityServer/obj/
 TripCompany.IdentityServer/bin/
 .vs/TripGallery/v15/.suo
+TripCompany.IdentityServer/TripCompany.IdentityServer.csproj.user
+.vs/TripGallery/v14/.suo
