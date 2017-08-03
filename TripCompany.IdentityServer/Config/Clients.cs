@@ -29,6 +29,21 @@ namespace TripCompany.IdentityServer.Config
                     {
                         "gallerymanagement"
                     }
+                },
+                 new Client
+                {
+                    ClientId = "tripgalleryimplicit",
+                    ClientName = "Trip Gallery (Inplicit)",
+                    Flow = Flows.Implicit,
+                    AllowAccessToAllScopes = true,
+                    AllowedScopes = new List<string>
+                    {
+                        "gallerymanagement"
+                    },
+                    RedirectUris = new List<string>
+                    {
+                        Constants.TripGalleryAngular + "callback.html"
+                    }
                 }
             };
         }
