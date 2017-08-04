@@ -33,7 +33,7 @@ namespace TripCompany.IdentityServer.Config
                  new Client
                 {
                     ClientId = "tripgalleryimplicit",
-                    ClientName = "Trip Gallery (Inplicit)",
+                    ClientName = "Trip Gallery (Implicit)",
                     Flow = Flows.Implicit,
                     AllowAccessToAllScopes = true,
                     AllowedScopes = new List<string>
@@ -44,7 +44,22 @@ namespace TripCompany.IdentityServer.Config
                     {
                         Constants.TripGalleryAngular + "callback.html"
                     }
-                }
+                },
+                 new Client
+                 {
+                     ClientId = "tripgalleryauthcode",
+                     ClientName = "Trip Gallery (Authirization Code)",
+                     Flow = Flows.AuthorizationCode,
+                     AllowAccessToAllScopes = true,
+                     AllowedScopes = new List<string>
+                     {
+                        "gallerymanagement"
+                     },
+                     RedirectUris = new List<string>
+                     {
+                        Constants.TripGalleryMVCSTSCallback
+                     }
+                 }
             };
         }
     }

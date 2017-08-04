@@ -6,7 +6,7 @@
      
      
 
-    app.config(function ($routeProvider) {
+    app.config(function ($routeProvider, $httpProvider) {
  
         $routeProvider            
             .when("/trips", {
@@ -30,6 +30,19 @@
                  controller: "tripAlbumController as vm"
              })
            .otherwise({ redirectTo: "/trips" });
+
+        $httpProvider.interceptors.push(function (appSettings, tokenContainer) {
+            return {
+                'request': function (config) {
+                    if (config.url.indexOf(appSettings.tripGalleryAPI) === 0) {
+                        config.headers.Authorization = "Bearer " + tokenContainer.getToken().token;
+                    }
+
+                    return config;
+                }
+            }
+
+        });
        
     });
 

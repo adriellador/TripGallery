@@ -23,7 +23,7 @@
                     // get token using implicit flow
                     var url = "https://localhost:44317/identity/connect/authorize?" +
                         "client_id=tripgalleryimplicit&" +
-                        "redirect_uri=" + encodeURI(window.location.protocol + "//" + window.location.host + "/callback.html") + "&" +
+                        "redirect_uri=" + encodeURI("https://localhost:44316/callback.html") + "&" +
                         "response_type=token&" +
                         "scope=gallerymanagement";
 

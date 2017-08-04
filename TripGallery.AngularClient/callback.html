@@ -22,7 +22,7 @@
             if (!result.error && result.access_token != undefined) {
                 localStorage["access_token"] = result.access_token;
 
-                window.location = window.location.protocol + "\\" + window.location.host + "/W"
+                window.location = window.location.protocol + "//" + window.location.host + "/"
             }
             else {
                 alert("Error: " + (error.message || error));
