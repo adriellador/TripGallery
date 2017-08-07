@@ -29,7 +29,7 @@ namespace TripGallery.MVCClient.Helpers
             }
           
            
-            client.BaseAddress = new Uri(Constants.TripGalleryAPI);
+            client.BaseAddress = new Uri(Constants.TripGalleryAPI); 
 
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(

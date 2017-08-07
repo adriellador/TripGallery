@@ -64,6 +64,22 @@ namespace TripCompany.IdentityServer.Config
                          new Secret(Constants.TripGalleryClientSecret.Sha256())
 
                      }
+                 },
+                 new Client
+                 {
+                     ClientId = "tripgalleryropc",
+                     ClientName = "Trip Gallery (REsource Owner Password Credentials)",
+                     Flow = Flows.ResourceOwner,
+                     AllowedScopes = new List<string>
+                     {
+                         "gallerymanagement"
+                     },
+                     AllowAccessToAllScopes = true,
+                     ClientSecrets = new List<Secret>()
+                     {
+                         new Secret(Constants.TripGalleryClientSecret.Sha256())
+                     }
+
                  }
             };
         }
