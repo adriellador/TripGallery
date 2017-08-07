@@ -18,8 +18,16 @@ namespace TripGallery.MVCClient.Helpers
         { 
             HttpClient client = new HttpClient();
 
-            var accessToken = RequestAccessTokenClientCredentials();
-            client.SetBearerToken(accessToken);
+            // client credentials flow
+            // var accessToken = RequestAccessTokenClientCredentials();
+
+            //Authorization code flow
+            var accessToken = RequestAccessTokenAuthorizationCode();
+            if(accessToken != null)
+            {
+                client.SetBearerToken(accessToken);
+            }
+          
            
             client.BaseAddress = new Uri(Constants.TripGalleryAPI);
 
@@ -29,6 +37,24 @@ namespace TripGallery.MVCClient.Helpers
 
             return client;
         }
+
+        public static string RequestAccessTokenAuthorizationCode()
+        {
+            var cookie = HttpContext.Current.Request.Cookies.Get("TripGalleryCookie");
+            if(cookie != null && cookie["access_token"] != null)
+            {
+                return cookie["access_token"];
+            }
+
+            var authorizeRequest = new AuthorizeRequest(Constants.TripGallerySTSAuthorizationEndpoint);
+
+            var state = HttpContext.Current.Request.Url.OriginalString;
+            var url = authorizeRequest.CreateAuthorizeUrl("tripgalleryauthcode", "code", "gallerymanagement", Constants.TripGalleryMVCSTSCallback, state);
+
+            HttpContext.Current.Response.Redirect(url);
+            return null;
+        }
+
         public static string RequestAccessTokenClientCredentials()
         {
             var cookie = HttpContext.Current.Request.Cookies.Get("TripGalleryCookie");

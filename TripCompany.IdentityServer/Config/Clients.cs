@@ -58,6 +58,11 @@ namespace TripCompany.IdentityServer.Config
                      RedirectUris = new List<string>
                      {
                         Constants.TripGalleryMVCSTSCallback
+                     },
+                     ClientSecrets = new List<Secret>()
+                     {
+                         new Secret(Constants.TripGalleryClientSecret.Sha256())
+
                      }
                  }
             };
