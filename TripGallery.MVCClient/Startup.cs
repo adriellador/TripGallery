@@ -21,7 +21,27 @@ namespace TripGallery.MVCClient
 
         public void Configuration(IAppBuilder app)
         {
-            
+            app.UseCookieAuthentication(new Microsoft.Owin.Security.Cookies.CookieAuthenticationOptions
+            {
+                AuthenticationType = "Cookies"
+            });
+
+            app.UseOpenIdConnectAuthentication(new Microsoft.Owin.Security.OpenIdConnect.OpenIdConnectAuthenticationOptions
+            {
+                ClientId = "tripgalleryhybrid",
+                Authority = Constants.TripGallerySTS,
+                RedirectUri = Constants.TripGalleryMVC,
+                SignInAsAuthenticationType = "Cookie",
+                ResponseType = "code id_token",
+                Scope = "openid profile",
+                Notifications = new Microsoft.Owin.Security.OpenIdConnect.OpenIdConnectAuthenticationNotifications()
+                {
+                    SecurityTokenValidated = async n =>
+                    {
+                        TokenHelper.DecodeAndWrite(n.ProtocolMessage.IdToken);
+                    }
+                }
+            });
         }
     }
 }
