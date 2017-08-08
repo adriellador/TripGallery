@@ -19,16 +19,16 @@ namespace TripGallery.MVCClient.Helpers
             HttpClient client = new HttpClient();
 
             // client credentials flow
-            // var accessToken = RequestAccessTokenClientCredentials();
+            //var accessToken = RequestAccessTokenClientCredentials();
 
             //Authorization code flow
             var accessToken = RequestAccessTokenAuthorizationCode();
-            if(accessToken != null)
+            if (accessToken != null)
             {
                 client.SetBearerToken(accessToken);
             }
-          
-           
+
+
             client.BaseAddress = new Uri(Constants.TripGalleryAPI); 
 
             client.DefaultRequestHeaders.Accept.Clear();

@@ -31,7 +31,7 @@ namespace TripGallery.MVCClient
                 ClientId = "tripgalleryhybrid",
                 Authority = Constants.TripGallerySTS,
                 RedirectUri = Constants.TripGalleryMVC,
-                SignInAsAuthenticationType = "Cookie",
+                SignInAsAuthenticationType = "Cookies",
                 ResponseType = "code id_token",
                 Scope = "openid profile",
                 Notifications = new Microsoft.Owin.Security.OpenIdConnect.OpenIdConnectAuthenticationNotifications()
