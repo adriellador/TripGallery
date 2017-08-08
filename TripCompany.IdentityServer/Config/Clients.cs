@@ -80,6 +80,17 @@ namespace TripCompany.IdentityServer.Config
                          new Secret(Constants.TripGalleryClientSecret.Sha256())
                      }
 
+                 },
+                 new Client
+                 {
+                     ClientId = "tripgalleryhybrid",
+                     ClientName = "Trip Gallery (Hybrid)",
+                     Flow = Flows.Hybrid,
+                     AllowAccessToAllScopes =true,
+                     RedirectUris = new List<string>
+                     {
+                         Constants.TripGalleryMVC
+                     }
                  }
             };
         }
