@@ -10,7 +10,7 @@
     <link href="Content/site.css" rel="stylesheet" />
 </head>
 
-<body ng-app="tripGallery">
+<body ng-app="tripGallery" ng-controller="mainController as vm">
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
             <div><img src="angularlogo.png" class="headerLogo" /></div>
@@ -20,7 +20,7 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li>
-                                 
+                         <a href="" ng-if="!vm.mgr.expiried" ng-click="vm.logOut()">Logout ({{vm.mgr.profile.given_name}} {{vm.mgr.profile.family_name}})</a> 
                     </li>
                 </ul>
             </div>
@@ -58,7 +58,9 @@
     <script src="app/pictures/pictureIndexController.js"></script>
     <script src="app/pictures/pictureCreateController.js"></script>
     <script src="app/login/loginController.js"></script>
- 
+    <script src="app/mainController.js"></script>
+
+    <script src="Scripts/oidc-token-manager.js"></script>
 </body>
 
     </html>

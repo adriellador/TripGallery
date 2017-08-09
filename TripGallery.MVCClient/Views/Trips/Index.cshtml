@@ -38,23 +38,26 @@
                 <div>@item.Description</div>
 
                 <div>
-
-                    @if (item.IsPublic)
+                    @if (item.OwnerId == this.User.Identity.Name)
                     {
-                        @Html.ActionLink("Make private", "SwitchPrivacyLevel",
+                        if (item.IsPublic)
+                        {
+                            @Html.ActionLink("Make private", "SwitchPrivacyLevel",
                             new { id = item.Id, isPublic = item.IsPublic });
-                    }
-                    else
-                    {
-                        @Html.ActionLink("Make public", "SwitchPrivacyLevel",
+                        }
+                        else
+                        {
+                            @Html.ActionLink("Make public", "SwitchPrivacyLevel",
                             new { id = item.Id, isPublic = item.IsPublic });
-                    }
+                        }
 
-                    @Html.Raw(" | ");
+                        @Html.Raw(" | ")
+                    }
+                
 
                     @Html.ActionLink("Pictures", "Index", "Pictures", new { tripId = item.Id }, null)
 
-                    @Html.Raw(" | ");
+                    @Html.Raw(" | ")
 
                     @Html.ActionLink("Create album", "Album", "Trips", new { tripId = item.Id }, null)
 

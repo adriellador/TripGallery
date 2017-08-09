@@ -3,13 +3,24 @@
     angular
         .module("tripGallery")
         .controller("tripIndexController",
-                     ["tripResource", "$filter",
+                     ["tripResource", "$filter", "OidcManager",
                          TripIndexController]);
 
     function TripIndexController(tripResource, $filter) {
         var vm = this;
 
-        vm.switchPrivacyLevel = function (tripId)
+        vm.mgr = OidcManager.OidcManager();
+
+        vm.getUserIdentifier = function () {
+            if (!vm.mgr.expired) {
+                return "https://tripcompanysts/identity" + vm.mgr.profile.sub;
+            }
+            else {
+                return "";
+            }
+        }
+
+        vm.switchPrivacyLevel = function (tripId, OidcManager)
         {         
             // create a JsonPatchDocument to change the privacy level,
             // and send it to the API through the tripResource.
