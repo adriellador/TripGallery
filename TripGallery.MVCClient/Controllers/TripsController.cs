@@ -22,7 +22,6 @@ namespace TripGallery.MVCClient.Controllers
         // GET: Trips
         public async Task<ActionResult> Index()
         {
-
             var httpClient = TripGalleryHttpClient.GetClient();
 
             var rspTrips = await httpClient.GetAsync("api/trips").ConfigureAwait(false);
