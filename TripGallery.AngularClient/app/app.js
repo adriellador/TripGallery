@@ -6,7 +6,7 @@
      
      
 
-    app.config(function ($routeProvider, $httpProvider) {
+    app.config(function ($routeProvider) {
  
         $routeProvider            
             .when("/trips", {
@@ -28,25 +28,8 @@
             .when("/trips/:tripId/createalbum", {
                  templateUrl: "/app/trips/tripAlbum.html",
                  controller: "tripAlbumController as vm"
-            })
-            .when("/login", {
-                templateUrl: "/app/login/login.html",
-                controller: "loginController as vm"
-            })
+             })
            .otherwise({ redirectTo: "/trips" });
-
-        $httpProvider.interceptors.push(function (appSettings, tokenContainer) {
-            return {
-                'request': function (config) {
-                    if (config.url.indexOf(appSettings.tripGalleryAPI) === 0) {
-                        config.headers.Authorization = "Bearer " + tokenContainer.getToken().token;
-                    }
-
-                    return config;
-                }
-            }
-
-        });
        
     });
 

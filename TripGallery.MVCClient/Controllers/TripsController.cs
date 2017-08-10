@@ -1,4 +1,5 @@
-﻿using Marvin.JsonPatch;
+﻿using IdentityModel.Client;
+using Marvin.JsonPatch;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,14 @@ namespace TripGallery.MVCClient.Controllers
         // GET: Trips
         public async Task<ActionResult> Index()
         {
+            if (this.User.Identity.IsAuthenticated)
+            {
+                var identity = this.User.Identity as ClaimsIdentity;
+                foreach (var claim in identity.Claims)
+                {
+                    Debug.WriteLine(claim.Type + " - " + claim.Value);
+                }
+            } 
             var httpClient = TripGalleryHttpClient.GetClient();
 
             var rspTrips = await httpClient.GetAsync("api/trips").ConfigureAwait(false);
@@ -60,7 +69,29 @@ namespace TripGallery.MVCClient.Controllers
 
         public async Task<ActionResult> Album(Guid tripId)
         {
-            return View();
+            // get the access token.
+            var token = (User.Identity as ClaimsIdentity).FindFirst("access_token").Value;
+
+            UserInfoClient userInfoClient = new UserInfoClient(
+                   new Uri(Constants.TripGallerySTSUserInfoEndpoint),
+                   token);
+
+            var userInfoResponse = await userInfoClient.GetAsync();
+
+            if (!userInfoResponse.IsError)
+            {
+                // create an object to return (dynamic Expando - anonymous 
+                // types won't allow access to their properties from the view)
+                dynamic addressInfo = new ExpandoObject();
+                addressInfo.Address = userInfoResponse.Claims.First(c => c.Item1 == "address").Item2;
+
+                return View(addressInfo);
+            }
+            else
+            {
+                var exception = new Exception("Problem getting your address.  Please contact your administrator.");
+                return View("Error", new HandleErrorInfo(exception, "Trips", "Album"));
+            }
         }
 
         // POST: Trips/Create

@@ -1,52 +1,33 @@
 ﻿<!DOCTYPE html>
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title></title>
-	<meta charset="utf-8" />
 </head>
 <body>
+    
     <script src="Scripts/oidc-token-manager.js"></script>
-    <script>
-        //if (window.location.hash) {
-        //    processTokenCallback();
-        //}
+        <script>
 
-        //function processTokenCallback() {
-        //    debugger;
-        //    var hash = window.location.hash.substr(1);
-        //    var result = hash.split('&').reduce(function (result, item) {
-        //        var parts = item.split('=');
-        //        result[parts[0]] = parts[1];
-        //        return result;
-        //    }, {});
-
-        //    if (!result.error && result.access_token != undefined) {
-        //        localStorage["access_token"] = result.access_token;
-
-        //        window.location = window.location.protocol + "//" + window.location.host + "/"
-        //    }
-        //    else {
-        //        alert("Error: " + (error.message || error));
-        //    }
-        //}
-
-        // OpenId Connect Implicit Flow
         debugger;
         var config = {
             client_id: "tripgalleryimplicit",
-            redirect_uri: "https://localhost:44316/callback.html",
+            redirect_uri:  window.location.protocol + "//" + window.location.host + "/callback.html", 
+            load_user_profile: false,
             authority: "https://localhost:44317/identity"
-        }
-
+        };
+            
         var mgr = new OidcTokenManager(config);
 
-        mgr.processTokenCallbackAsync().then(function () {
-            window.location = "https://localhost:44316/";
+        // process the token
+        mgr.processTokenCallbackAsync().then(function ()
+        {
+            window.location = window.location.protocol + "//" + window.location.host + "/";;
         },
-        function (error) {
-            alert("Problem Getting Token : " + (error.message || error));
+        function (error)
+        {
+           alert("Problem Getting Token : " + (error.message || error));
         });
-
+  
     </script>
 
 </body>

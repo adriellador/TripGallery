@@ -12,6 +12,7 @@ using TripGallery.MVCClient.Models;
 
 namespace TripGallery.MVCClient.Controllers
 {
+
     [Authorize]
     public class PicturesController : Controller
     {
@@ -82,7 +83,7 @@ namespace TripGallery.MVCClient.Controllers
                 return View("Error", new HandleErrorInfo(ex, "Pictures", "Create"));
             }
         }
-
+         
         public async Task<ActionResult> Delete(Guid tripId, Guid pictureId)
         {
             var httpClient = TripGalleryHttpClient.GetClient();

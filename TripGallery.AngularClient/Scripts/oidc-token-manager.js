@@ -3,6 +3,140 @@
     // globals
     var _promiseFactory;
     var _httpRequest;
+/**
+ * @constructor
+ */
+function DefaultHttpRequest() {
+
+    /**
+     * @name _promiseFactory
+     * @type DefaultPromiseFactory
+     */
+
+    /**
+     * @param {XMLHttpRequest} xhr
+     * @param {object.<string, string>} headers
+     */
+    function setHeaders(xhr, headers) {
+        var keys = Object.keys(headers);
+
+        for (var i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            var value = headers[key];
+
+            xhr.setRequestHeader(key, value);
+        }
+    }
+
+    /**
+     * @param {string} url
+     * @param {{ headers: object.<string, string> }} [config]
+     * @returns {Promise}
+     */
+    this.getJSON = function (url, config) {
+        return _promiseFactory.create(function (resolve, reject) {
+
+            try {
+                var xhr = new XMLHttpRequest();
+                xhr.open("GET", url);
+                xhr.responseType = "json";
+
+                if (config) {
+                    if (config.headers) {
+                        setHeaders(xhr, config.headers);
+                    }
+                }
+
+                xhr.onload = function () {
+                    try {
+                        if (xhr.status === 200) {
+                            var response = xhr.response;
+                            if (typeof response === "string") {
+                                response = JSON.parse(response);
+                            }
+                            resolve(response);
+                        }
+                        else {
+                            reject(Error(xhr.statusText + "(" + xhr.status + ")"));
+                        }
+                    }
+                    catch (err) {
+                        reject(err);
+                    }
+                };
+
+                xhr.onerror = function () {
+                    reject(Error("Network error"));
+                };
+
+                xhr.send();
+            }
+            catch (err) {
+                return reject(err);
+            }
+        });
+    };
+}
+
+_httpRequest = new DefaultHttpRequest();
+
+/**
+ * @constructor
+ * @param {Promise} promise
+ */
+function DefaultPromise(promise) {
+
+    /**
+     * @param {function(*):*} successCallback
+     * @param {function(*):*} errorCallback
+     * @returns {DefaultPromise}
+     */
+    this.then = function (successCallback, errorCallback) {
+        var childPromise = promise.then(successCallback, errorCallback);
+
+        return new DefaultPromise(childPromise);
+    };
+
+    /**
+     *
+     * @param {function(*):*} errorCallback
+     * @returns {DefaultPromise}
+     */
+    this.catch = function (errorCallback) {
+        var childPromise = promise.catch(errorCallback);
+
+        return new DefaultPromise(childPromise);
+    };
+}
+
+/**
+ * @constructor
+ */
+function DefaultPromiseFactory() {
+
+    this.resolve = function (value) {
+        return new DefaultPromise(Promise.resolve(value));
+    };
+
+    this.reject = function (reason) {
+        return new DefaultPromise(Promise.reject(reason));
+    };
+
+    /**
+     * @param {function(resolve:function, reject:function)} callback
+     * @returns {DefaultPromise}
+     */
+    this.create = function (callback) {
+        return new DefaultPromise(new Promise(callback));
+    };
+}
+
+_promiseFactory = new DefaultPromiseFactory();
+(function () {
+
+    // globals
+    var _promiseFactory;
+    var _httpRequest;
 /*
 CryptoJS v3.1.2
 code.google.com/p/crypto-js
@@ -6668,91 +6802,81 @@ KJUR.jws.IntDate.intDate2Zulu = function(intDate) {
  * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
  * @license   Licensed under MIT license
  *            See https://raw.githubusercontent.com/jakearchibald/es6-promise/master/LICENSE
- * @version   3.0.2
+ * @version   2.0.0
  */
 
 (function() {
     "use strict";
-    function lib$es6$promise$utils$$objectOrFunction(x) {
+
+    function $$utils$$objectOrFunction(x) {
       return typeof x === 'function' || (typeof x === 'object' && x !== null);
     }
 
-    function lib$es6$promise$utils$$isFunction(x) {
+    function $$utils$$isFunction(x) {
       return typeof x === 'function';
     }
 
-    function lib$es6$promise$utils$$isMaybeThenable(x) {
+    function $$utils$$isMaybeThenable(x) {
       return typeof x === 'object' && x !== null;
     }
 
-    var lib$es6$promise$utils$$_isArray;
+    var $$utils$$_isArray;
+
     if (!Array.isArray) {
-      lib$es6$promise$utils$$_isArray = function (x) {
+      $$utils$$_isArray = function (x) {
         return Object.prototype.toString.call(x) === '[object Array]';
       };
     } else {
-      lib$es6$promise$utils$$_isArray = Array.isArray;
+      $$utils$$_isArray = Array.isArray;
     }
 
-    var lib$es6$promise$utils$$isArray = lib$es6$promise$utils$$_isArray;
-    var lib$es6$promise$asap$$len = 0;
-    var lib$es6$promise$asap$$toString = {}.toString;
-    var lib$es6$promise$asap$$vertxNext;
-    var lib$es6$promise$asap$$customSchedulerFn;
+    var $$utils$$isArray = $$utils$$_isArray;
+    var $$utils$$now = Date.now || function() { return new Date().getTime(); };
+    function $$utils$$F() { }
 
-    var lib$es6$promise$asap$$asap = function asap(callback, arg) {
-      lib$es6$promise$asap$$queue[lib$es6$promise$asap$$len] = callback;
-      lib$es6$promise$asap$$queue[lib$es6$promise$asap$$len + 1] = arg;
-      lib$es6$promise$asap$$len += 2;
-      if (lib$es6$promise$asap$$len === 2) {
-        // If len is 2, that means that we need to schedule an async flush.
+    var $$utils$$o_create = (Object.create || function (o) {
+      if (arguments.length > 1) {
+        throw new Error('Second argument not supported');
+      }
+      if (typeof o !== 'object') {
+        throw new TypeError('Argument must be an object');
+      }
+      $$utils$$F.prototype = o;
+      return new $$utils$$F();
+    });
+
+    var $$asap$$len = 0;
+
+    var $$asap$$default = function asap(callback, arg) {
+      $$asap$$queue[$$asap$$len] = callback;
+      $$asap$$queue[$$asap$$len + 1] = arg;
+      $$asap$$len += 2;
+      if ($$asap$$len === 2) {
+        // If len is 1, that means that we need to schedule an async flush.
         // If additional callbacks are queued before the queue is flushed, they
         // will be processed by this flush that we are scheduling.
-        if (lib$es6$promise$asap$$customSchedulerFn) {
-          lib$es6$promise$asap$$customSchedulerFn(lib$es6$promise$asap$$flush);
-        } else {
-          lib$es6$promise$asap$$scheduleFlush();
-        }
+        $$asap$$scheduleFlush();
       }
-    }
+    };
 
-    function lib$es6$promise$asap$$setScheduler(scheduleFn) {
-      lib$es6$promise$asap$$customSchedulerFn = scheduleFn;
-    }
-
-    function lib$es6$promise$asap$$setAsap(asapFn) {
-      lib$es6$promise$asap$$asap = asapFn;
-    }
-
-    var lib$es6$promise$asap$$browserWindow = (typeof window !== 'undefined') ? window : undefined;
-    var lib$es6$promise$asap$$browserGlobal = lib$es6$promise$asap$$browserWindow || {};
-    var lib$es6$promise$asap$$BrowserMutationObserver = lib$es6$promise$asap$$browserGlobal.MutationObserver || lib$es6$promise$asap$$browserGlobal.WebKitMutationObserver;
-    var lib$es6$promise$asap$$isNode = typeof process !== 'undefined' && {}.toString.call(process) === '[object process]';
+    var $$asap$$browserGlobal = (typeof window !== 'undefined') ? window : {};
+    var $$asap$$BrowserMutationObserver = $$asap$$browserGlobal.MutationObserver || $$asap$$browserGlobal.WebKitMutationObserver;
 
     // test for web worker but not in IE10
-    var lib$es6$promise$asap$$isWorker = typeof Uint8ClampedArray !== 'undefined' &&
+    var $$asap$$isWorker = typeof Uint8ClampedArray !== 'undefined' &&
       typeof importScripts !== 'undefined' &&
       typeof MessageChannel !== 'undefined';
 
     // node
-    function lib$es6$promise$asap$$useNextTick() {
-      // node version 0.10.x displays a deprecation warning when nextTick is used recursively
-      // see https://github.com/cujojs/when/issues/410 for details
+    function $$asap$$useNextTick() {
       return function() {
-        process.nextTick(lib$es6$promise$asap$$flush);
+        process.nextTick($$asap$$flush);
       };
     }
 
-    // vertx
-    function lib$es6$promise$asap$$useVertxTimer() {
-      return function() {
-        lib$es6$promise$asap$$vertxNext(lib$es6$promise$asap$$flush);
-      };
-    }
-
-    function lib$es6$promise$asap$$useMutationObserver() {
+    function $$asap$$useMutationObserver() {
       var iterations = 0;
-      var observer = new lib$es6$promise$asap$$BrowserMutationObserver(lib$es6$promise$asap$$flush);
+      var observer = new $$asap$$BrowserMutationObserver($$asap$$flush);
       var node = document.createTextNode('');
       observer.observe(node, { characterData: true });
 
@@ -6762,86 +6886,73 @@ KJUR.jws.IntDate.intDate2Zulu = function(intDate) {
     }
 
     // web worker
-    function lib$es6$promise$asap$$useMessageChannel() {
+    function $$asap$$useMessageChannel() {
       var channel = new MessageChannel();
-      channel.port1.onmessage = lib$es6$promise$asap$$flush;
+      channel.port1.onmessage = $$asap$$flush;
       return function () {
         channel.port2.postMessage(0);
       };
     }
 
-    function lib$es6$promise$asap$$useSetTimeout() {
+    function $$asap$$useSetTimeout() {
       return function() {
-        setTimeout(lib$es6$promise$asap$$flush, 1);
+        setTimeout($$asap$$flush, 1);
       };
     }
 
-    var lib$es6$promise$asap$$queue = new Array(1000);
-    function lib$es6$promise$asap$$flush() {
-      for (var i = 0; i < lib$es6$promise$asap$$len; i+=2) {
-        var callback = lib$es6$promise$asap$$queue[i];
-        var arg = lib$es6$promise$asap$$queue[i+1];
+    var $$asap$$queue = new Array(1000);
+
+    function $$asap$$flush() {
+      for (var i = 0; i < $$asap$$len; i+=2) {
+        var callback = $$asap$$queue[i];
+        var arg = $$asap$$queue[i+1];
 
         callback(arg);
 
-        lib$es6$promise$asap$$queue[i] = undefined;
-        lib$es6$promise$asap$$queue[i+1] = undefined;
+        $$asap$$queue[i] = undefined;
+        $$asap$$queue[i+1] = undefined;
       }
 
-      lib$es6$promise$asap$$len = 0;
+      $$asap$$len = 0;
     }
 
-    function lib$es6$promise$asap$$attemptVertx() {
-      try {
-        var r = require;
-        var vertx = r('vertx');
-        lib$es6$promise$asap$$vertxNext = vertx.runOnLoop || vertx.runOnContext;
-        return lib$es6$promise$asap$$useVertxTimer();
-      } catch(e) {
-        return lib$es6$promise$asap$$useSetTimeout();
-      }
-    }
+    var $$asap$$scheduleFlush;
 
-    var lib$es6$promise$asap$$scheduleFlush;
     // Decide what async method to use to triggering processing of queued callbacks:
-    if (lib$es6$promise$asap$$isNode) {
-      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useNextTick();
-    } else if (lib$es6$promise$asap$$BrowserMutationObserver) {
-      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useMutationObserver();
-    } else if (lib$es6$promise$asap$$isWorker) {
-      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useMessageChannel();
-    } else if (lib$es6$promise$asap$$browserWindow === undefined && typeof require === 'function') {
-      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$attemptVertx();
+    if (typeof process !== 'undefined' && {}.toString.call(process) === '[object process]') {
+      $$asap$$scheduleFlush = $$asap$$useNextTick();
+    } else if ($$asap$$BrowserMutationObserver) {
+      $$asap$$scheduleFlush = $$asap$$useMutationObserver();
+    } else if ($$asap$$isWorker) {
+      $$asap$$scheduleFlush = $$asap$$useMessageChannel();
     } else {
-      lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useSetTimeout();
+      $$asap$$scheduleFlush = $$asap$$useSetTimeout();
     }
 
-    function lib$es6$promise$$internal$$noop() {}
+    function $$$internal$$noop() {}
+    var $$$internal$$PENDING   = void 0;
+    var $$$internal$$FULFILLED = 1;
+    var $$$internal$$REJECTED  = 2;
+    var $$$internal$$GET_THEN_ERROR = new $$$internal$$ErrorObject();
 
-    var lib$es6$promise$$internal$$PENDING   = void 0;
-    var lib$es6$promise$$internal$$FULFILLED = 1;
-    var lib$es6$promise$$internal$$REJECTED  = 2;
-
-    var lib$es6$promise$$internal$$GET_THEN_ERROR = new lib$es6$promise$$internal$$ErrorObject();
-
-    function lib$es6$promise$$internal$$selfFulfillment() {
+    function $$$internal$$selfFullfillment() {
       return new TypeError("You cannot resolve a promise with itself");
     }
 
-    function lib$es6$promise$$internal$$cannotReturnOwn() {
-      return new TypeError('A promises callback cannot return that same promise.');
+    function $$$internal$$cannotReturnOwn() {
+      return new TypeError('A promises callback cannot return that same promise.')
     }
 
-    function lib$es6$promise$$internal$$getThen(promise) {
+    function $$$internal$$getThen(promise) {
       try {
         return promise.then;
       } catch(error) {
-        lib$es6$promise$$internal$$GET_THEN_ERROR.error = error;
-        return lib$es6$promise$$internal$$GET_THEN_ERROR;
+        $$$internal$$GET_THEN_ERROR.error = error;
+        return $$$internal$$GET_THEN_ERROR;
       }
     }
 
-    function lib$es6$promise$$internal$$tryThen(then, value, fulfillmentHandler, rejectionHandler) {
+    function $$$internal$$tryThen(then, value, fulfillmentHandler, rejectionHandler) {
       try {
         then.call(value, fulfillmentHandler, rejectionHandler);
       } catch(e) {
@@ -6849,116 +6960,117 @@ KJUR.jws.IntDate.intDate2Zulu = function(intDate) {
       }
     }
 
-    function lib$es6$promise$$internal$$handleForeignThenable(promise, thenable, then) {
-       lib$es6$promise$asap$$asap(function(promise) {
+    function $$$internal$$handleForeignThenable(promise, thenable, then) {
+       $$asap$$default(function(promise) {
         var sealed = false;
-        var error = lib$es6$promise$$internal$$tryThen(then, thenable, function(value) {
+        var error = $$$internal$$tryThen(then, thenable, function(value) {
           if (sealed) { return; }
           sealed = true;
           if (thenable !== value) {
-            lib$es6$promise$$internal$$resolve(promise, value);
+            $$$internal$$resolve(promise, value);
           } else {
-            lib$es6$promise$$internal$$fulfill(promise, value);
+            $$$internal$$fulfill(promise, value);
           }
         }, function(reason) {
           if (sealed) { return; }
           sealed = true;
 
-          lib$es6$promise$$internal$$reject(promise, reason);
+          $$$internal$$reject(promise, reason);
         }, 'Settle: ' + (promise._label || ' unknown promise'));
 
         if (!sealed && error) {
           sealed = true;
-          lib$es6$promise$$internal$$reject(promise, error);
+          $$$internal$$reject(promise, error);
         }
       }, promise);
     }
 
-    function lib$es6$promise$$internal$$handleOwnThenable(promise, thenable) {
-      if (thenable._state === lib$es6$promise$$internal$$FULFILLED) {
-        lib$es6$promise$$internal$$fulfill(promise, thenable._result);
-      } else if (thenable._state === lib$es6$promise$$internal$$REJECTED) {
-        lib$es6$promise$$internal$$reject(promise, thenable._result);
+    function $$$internal$$handleOwnThenable(promise, thenable) {
+      if (thenable._state === $$$internal$$FULFILLED) {
+        $$$internal$$fulfill(promise, thenable._result);
+      } else if (promise._state === $$$internal$$REJECTED) {
+        $$$internal$$reject(promise, thenable._result);
       } else {
-        lib$es6$promise$$internal$$subscribe(thenable, undefined, function(value) {
-          lib$es6$promise$$internal$$resolve(promise, value);
+        $$$internal$$subscribe(thenable, undefined, function(value) {
+          $$$internal$$resolve(promise, value);
         }, function(reason) {
-          lib$es6$promise$$internal$$reject(promise, reason);
+          $$$internal$$reject(promise, reason);
         });
       }
     }
 
-    function lib$es6$promise$$internal$$handleMaybeThenable(promise, maybeThenable) {
+    function $$$internal$$handleMaybeThenable(promise, maybeThenable) {
       if (maybeThenable.constructor === promise.constructor) {
-        lib$es6$promise$$internal$$handleOwnThenable(promise, maybeThenable);
+        $$$internal$$handleOwnThenable(promise, maybeThenable);
       } else {
-        var then = lib$es6$promise$$internal$$getThen(maybeThenable);
+        var then = $$$internal$$getThen(maybeThenable);
 
-        if (then === lib$es6$promise$$internal$$GET_THEN_ERROR) {
-          lib$es6$promise$$internal$$reject(promise, lib$es6$promise$$internal$$GET_THEN_ERROR.error);
+        if (then === $$$internal$$GET_THEN_ERROR) {
+          $$$internal$$reject(promise, $$$internal$$GET_THEN_ERROR.error);
         } else if (then === undefined) {
-          lib$es6$promise$$internal$$fulfill(promise, maybeThenable);
-        } else if (lib$es6$promise$utils$$isFunction(then)) {
-          lib$es6$promise$$internal$$handleForeignThenable(promise, maybeThenable, then);
+          $$$internal$$fulfill(promise, maybeThenable);
+        } else if ($$utils$$isFunction(then)) {
+          $$$internal$$handleForeignThenable(promise, maybeThenable, then);
         } else {
-          lib$es6$promise$$internal$$fulfill(promise, maybeThenable);
+          $$$internal$$fulfill(promise, maybeThenable);
         }
       }
     }
 
-    function lib$es6$promise$$internal$$resolve(promise, value) {
+    function $$$internal$$resolve(promise, value) {
       if (promise === value) {
-        lib$es6$promise$$internal$$reject(promise, lib$es6$promise$$internal$$selfFulfillment());
-      } else if (lib$es6$promise$utils$$objectOrFunction(value)) {
-        lib$es6$promise$$internal$$handleMaybeThenable(promise, value);
+        $$$internal$$reject(promise, $$$internal$$selfFullfillment());
+      } else if ($$utils$$objectOrFunction(value)) {
+        $$$internal$$handleMaybeThenable(promise, value);
       } else {
-        lib$es6$promise$$internal$$fulfill(promise, value);
+        $$$internal$$fulfill(promise, value);
       }
     }
 
-    function lib$es6$promise$$internal$$publishRejection(promise) {
+    function $$$internal$$publishRejection(promise) {
       if (promise._onerror) {
         promise._onerror(promise._result);
       }
 
-      lib$es6$promise$$internal$$publish(promise);
+      $$$internal$$publish(promise);
     }
 
-    function lib$es6$promise$$internal$$fulfill(promise, value) {
-      if (promise._state !== lib$es6$promise$$internal$$PENDING) { return; }
+    function $$$internal$$fulfill(promise, value) {
+      if (promise._state !== $$$internal$$PENDING) { return; }
 
       promise._result = value;
-      promise._state = lib$es6$promise$$internal$$FULFILLED;
+      promise._state = $$$internal$$FULFILLED;
 
-      if (promise._subscribers.length !== 0) {
-        lib$es6$promise$asap$$asap(lib$es6$promise$$internal$$publish, promise);
+      if (promise._subscribers.length === 0) {
+      } else {
+        $$asap$$default($$$internal$$publish, promise);
       }
     }
 
-    function lib$es6$promise$$internal$$reject(promise, reason) {
-      if (promise._state !== lib$es6$promise$$internal$$PENDING) { return; }
-      promise._state = lib$es6$promise$$internal$$REJECTED;
+    function $$$internal$$reject(promise, reason) {
+      if (promise._state !== $$$internal$$PENDING) { return; }
+      promise._state = $$$internal$$REJECTED;
       promise._result = reason;
 
-      lib$es6$promise$asap$$asap(lib$es6$promise$$internal$$publishRejection, promise);
+      $$asap$$default($$$internal$$publishRejection, promise);
     }
 
-    function lib$es6$promise$$internal$$subscribe(parent, child, onFulfillment, onRejection) {
+    function $$$internal$$subscribe(parent, child, onFulfillment, onRejection) {
       var subscribers = parent._subscribers;
       var length = subscribers.length;
 
       parent._onerror = null;
 
       subscribers[length] = child;
-      subscribers[length + lib$es6$promise$$internal$$FULFILLED] = onFulfillment;
-      subscribers[length + lib$es6$promise$$internal$$REJECTED]  = onRejection;
+      subscribers[length + $$$internal$$FULFILLED] = onFulfillment;
+      subscribers[length + $$$internal$$REJECTED]  = onRejection;
 
       if (length === 0 && parent._state) {
-        lib$es6$promise$asap$$asap(lib$es6$promise$$internal$$publish, parent);
+        $$asap$$default($$$internal$$publish, parent);
       }
     }
 
-    function lib$es6$promise$$internal$$publish(promise) {
+    function $$$internal$$publish(promise) {
       var subscribers = promise._subscribers;
       var settled = promise._state;
 
@@ -6971,7 +7083,7 @@ KJUR.jws.IntDate.intDate2Zulu = function(intDate) {
         callback = subscribers[i + settled];
 
         if (child) {
-          lib$es6$promise$$internal$$invokeCallback(settled, child, callback, detail);
+          $$$internal$$invokeCallback(settled, child, callback, detail);
         } else {
           callback(detail);
         }
@@ -6980,29 +7092,29 @@ KJUR.jws.IntDate.intDate2Zulu = function(intDate) {
       promise._subscribers.length = 0;
     }
 
-    function lib$es6$promise$$internal$$ErrorObject() {
+    function $$$internal$$ErrorObject() {
       this.error = null;
     }
 
-    var lib$es6$promise$$internal$$TRY_CATCH_ERROR = new lib$es6$promise$$internal$$ErrorObject();
+    var $$$internal$$TRY_CATCH_ERROR = new $$$internal$$ErrorObject();
 
-    function lib$es6$promise$$internal$$tryCatch(callback, detail) {
+    function $$$internal$$tryCatch(callback, detail) {
       try {
         return callback(detail);
       } catch(e) {
-        lib$es6$promise$$internal$$TRY_CATCH_ERROR.error = e;
-        return lib$es6$promise$$internal$$TRY_CATCH_ERROR;
+        $$$internal$$TRY_CATCH_ERROR.error = e;
+        return $$$internal$$TRY_CATCH_ERROR;
       }
     }
 
-    function lib$es6$promise$$internal$$invokeCallback(settled, promise, callback, detail) {
-      var hasCallback = lib$es6$promise$utils$$isFunction(callback),
+    function $$$internal$$invokeCallback(settled, promise, callback, detail) {
+      var hasCallback = $$utils$$isFunction(callback),
           value, error, succeeded, failed;
 
       if (hasCallback) {
-        value = lib$es6$promise$$internal$$tryCatch(callback, detail);
+        value = $$$internal$$tryCatch(callback, detail);
 
-        if (value === lib$es6$promise$$internal$$TRY_CATCH_ERROR) {
+        if (value === $$$internal$$TRY_CATCH_ERROR) {
           failed = true;
           error = value.error;
           value = null;
@@ -7011,7 +7123,7 @@ KJUR.jws.IntDate.intDate2Zulu = function(intDate) {
         }
 
         if (promise === value) {
-          lib$es6$promise$$internal$$reject(promise, lib$es6$promise$$internal$$cannotReturnOwn());
+          $$$internal$$reject(promise, $$$internal$$cannotReturnOwn());
           return;
         }
 
@@ -7020,162 +7132,175 @@ KJUR.jws.IntDate.intDate2Zulu = function(intDate) {
         succeeded = true;
       }
 
-      if (promise._state !== lib$es6$promise$$internal$$PENDING) {
+      if (promise._state !== $$$internal$$PENDING) {
         // noop
       } else if (hasCallback && succeeded) {
-        lib$es6$promise$$internal$$resolve(promise, value);
+        $$$internal$$resolve(promise, value);
       } else if (failed) {
-        lib$es6$promise$$internal$$reject(promise, error);
-      } else if (settled === lib$es6$promise$$internal$$FULFILLED) {
-        lib$es6$promise$$internal$$fulfill(promise, value);
-      } else if (settled === lib$es6$promise$$internal$$REJECTED) {
-        lib$es6$promise$$internal$$reject(promise, value);
+        $$$internal$$reject(promise, error);
+      } else if (settled === $$$internal$$FULFILLED) {
+        $$$internal$$fulfill(promise, value);
+      } else if (settled === $$$internal$$REJECTED) {
+        $$$internal$$reject(promise, value);
       }
     }
 
-    function lib$es6$promise$$internal$$initializePromise(promise, resolver) {
+    function $$$internal$$initializePromise(promise, resolver) {
       try {
         resolver(function resolvePromise(value){
-          lib$es6$promise$$internal$$resolve(promise, value);
+          $$$internal$$resolve(promise, value);
         }, function rejectPromise(reason) {
-          lib$es6$promise$$internal$$reject(promise, reason);
+          $$$internal$$reject(promise, reason);
         });
       } catch(e) {
-        lib$es6$promise$$internal$$reject(promise, e);
+        $$$internal$$reject(promise, e);
       }
     }
 
-    function lib$es6$promise$enumerator$$Enumerator(Constructor, input) {
-      var enumerator = this;
+    function $$$enumerator$$makeSettledResult(state, position, value) {
+      if (state === $$$internal$$FULFILLED) {
+        return {
+          state: 'fulfilled',
+          value: value
+        };
+      } else {
+        return {
+          state: 'rejected',
+          reason: value
+        };
+      }
+    }
 
-      enumerator._instanceConstructor = Constructor;
-      enumerator.promise = new Constructor(lib$es6$promise$$internal$$noop);
+    function $$$enumerator$$Enumerator(Constructor, input, abortOnReject, label) {
+      this._instanceConstructor = Constructor;
+      this.promise = new Constructor($$$internal$$noop, label);
+      this._abortOnReject = abortOnReject;
 
-      if (enumerator._validateInput(input)) {
-        enumerator._input     = input;
-        enumerator.length     = input.length;
-        enumerator._remaining = input.length;
+      if (this._validateInput(input)) {
+        this._input     = input;
+        this.length     = input.length;
+        this._remaining = input.length;
 
-        enumerator._init();
+        this._init();
 
-        if (enumerator.length === 0) {
-          lib$es6$promise$$internal$$fulfill(enumerator.promise, enumerator._result);
+        if (this.length === 0) {
+          $$$internal$$fulfill(this.promise, this._result);
         } else {
-          enumerator.length = enumerator.length || 0;
-          enumerator._enumerate();
-          if (enumerator._remaining === 0) {
-            lib$es6$promise$$internal$$fulfill(enumerator.promise, enumerator._result);
+          this.length = this.length || 0;
+          this._enumerate();
+          if (this._remaining === 0) {
+            $$$internal$$fulfill(this.promise, this._result);
           }
         }
       } else {
-        lib$es6$promise$$internal$$reject(enumerator.promise, enumerator._validationError());
+        $$$internal$$reject(this.promise, this._validationError());
       }
     }
 
-    lib$es6$promise$enumerator$$Enumerator.prototype._validateInput = function(input) {
-      return lib$es6$promise$utils$$isArray(input);
+    $$$enumerator$$Enumerator.prototype._validateInput = function(input) {
+      return $$utils$$isArray(input);
     };
 
-    lib$es6$promise$enumerator$$Enumerator.prototype._validationError = function() {
+    $$$enumerator$$Enumerator.prototype._validationError = function() {
       return new Error('Array Methods must be provided an Array');
     };
 
-    lib$es6$promise$enumerator$$Enumerator.prototype._init = function() {
+    $$$enumerator$$Enumerator.prototype._init = function() {
       this._result = new Array(this.length);
     };
 
-    var lib$es6$promise$enumerator$$default = lib$es6$promise$enumerator$$Enumerator;
+    var $$$enumerator$$default = $$$enumerator$$Enumerator;
 
-    lib$es6$promise$enumerator$$Enumerator.prototype._enumerate = function() {
-      var enumerator = this;
+    $$$enumerator$$Enumerator.prototype._enumerate = function() {
+      var length  = this.length;
+      var promise = this.promise;
+      var input   = this._input;
 
-      var length  = enumerator.length;
-      var promise = enumerator.promise;
-      var input   = enumerator._input;
-
-      for (var i = 0; promise._state === lib$es6$promise$$internal$$PENDING && i < length; i++) {
-        enumerator._eachEntry(input[i], i);
+      for (var i = 0; promise._state === $$$internal$$PENDING && i < length; i++) {
+        this._eachEntry(input[i], i);
       }
     };
 
-    lib$es6$promise$enumerator$$Enumerator.prototype._eachEntry = function(entry, i) {
-      var enumerator = this;
-      var c = enumerator._instanceConstructor;
-
-      if (lib$es6$promise$utils$$isMaybeThenable(entry)) {
-        if (entry.constructor === c && entry._state !== lib$es6$promise$$internal$$PENDING) {
+    $$$enumerator$$Enumerator.prototype._eachEntry = function(entry, i) {
+      var c = this._instanceConstructor;
+      if ($$utils$$isMaybeThenable(entry)) {
+        if (entry.constructor === c && entry._state !== $$$internal$$PENDING) {
           entry._onerror = null;
-          enumerator._settledAt(entry._state, i, entry._result);
+          this._settledAt(entry._state, i, entry._result);
         } else {
-          enumerator._willSettleAt(c.resolve(entry), i);
+          this._willSettleAt(c.resolve(entry), i);
         }
       } else {
-        enumerator._remaining--;
-        enumerator._result[i] = entry;
+        this._remaining--;
+        this._result[i] = this._makeResult($$$internal$$FULFILLED, i, entry);
       }
     };
 
-    lib$es6$promise$enumerator$$Enumerator.prototype._settledAt = function(state, i, value) {
-      var enumerator = this;
-      var promise = enumerator.promise;
+    $$$enumerator$$Enumerator.prototype._settledAt = function(state, i, value) {
+      var promise = this.promise;
 
-      if (promise._state === lib$es6$promise$$internal$$PENDING) {
-        enumerator._remaining--;
+      if (promise._state === $$$internal$$PENDING) {
+        this._remaining--;
 
-        if (state === lib$es6$promise$$internal$$REJECTED) {
-          lib$es6$promise$$internal$$reject(promise, value);
+        if (this._abortOnReject && state === $$$internal$$REJECTED) {
+          $$$internal$$reject(promise, value);
         } else {
-          enumerator._result[i] = value;
+          this._result[i] = this._makeResult(state, i, value);
         }
       }
 
-      if (enumerator._remaining === 0) {
-        lib$es6$promise$$internal$$fulfill(promise, enumerator._result);
+      if (this._remaining === 0) {
+        $$$internal$$fulfill(promise, this._result);
       }
     };
 
-    lib$es6$promise$enumerator$$Enumerator.prototype._willSettleAt = function(promise, i) {
+    $$$enumerator$$Enumerator.prototype._makeResult = function(state, i, value) {
+      return value;
+    };
+
+    $$$enumerator$$Enumerator.prototype._willSettleAt = function(promise, i) {
       var enumerator = this;
 
-      lib$es6$promise$$internal$$subscribe(promise, undefined, function(value) {
-        enumerator._settledAt(lib$es6$promise$$internal$$FULFILLED, i, value);
+      $$$internal$$subscribe(promise, undefined, function(value) {
+        enumerator._settledAt($$$internal$$FULFILLED, i, value);
       }, function(reason) {
-        enumerator._settledAt(lib$es6$promise$$internal$$REJECTED, i, reason);
+        enumerator._settledAt($$$internal$$REJECTED, i, reason);
       });
     };
-    function lib$es6$promise$promise$all$$all(entries) {
-      return new lib$es6$promise$enumerator$$default(this, entries).promise;
-    }
-    var lib$es6$promise$promise$all$$default = lib$es6$promise$promise$all$$all;
-    function lib$es6$promise$promise$race$$race(entries) {
+
+    var $$promise$all$$default = function all(entries, label) {
+      return new $$$enumerator$$default(this, entries, true /* abort on reject */, label).promise;
+    };
+
+    var $$promise$race$$default = function race(entries, label) {
       /*jshint validthis:true */
       var Constructor = this;
 
-      var promise = new Constructor(lib$es6$promise$$internal$$noop);
+      var promise = new Constructor($$$internal$$noop, label);
 
-      if (!lib$es6$promise$utils$$isArray(entries)) {
-        lib$es6$promise$$internal$$reject(promise, new TypeError('You must pass an array to race.'));
+      if (!$$utils$$isArray(entries)) {
+        $$$internal$$reject(promise, new TypeError('You must pass an array to race.'));
         return promise;
       }
 
       var length = entries.length;
 
       function onFulfillment(value) {
-        lib$es6$promise$$internal$$resolve(promise, value);
+        $$$internal$$resolve(promise, value);
       }
 
       function onRejection(reason) {
-        lib$es6$promise$$internal$$reject(promise, reason);
+        $$$internal$$reject(promise, reason);
       }
 
-      for (var i = 0; promise._state === lib$es6$promise$$internal$$PENDING && i < length; i++) {
-        lib$es6$promise$$internal$$subscribe(Constructor.resolve(entries[i]), undefined, onFulfillment, onRejection);
+      for (var i = 0; promise._state === $$$internal$$PENDING && i < length; i++) {
+        $$$internal$$subscribe(Constructor.resolve(entries[i]), undefined, onFulfillment, onRejection);
       }
 
       return promise;
-    }
-    var lib$es6$promise$promise$race$$default = lib$es6$promise$promise$race$$race;
-    function lib$es6$promise$promise$resolve$$resolve(object) {
+    };
+
+    var $$promise$resolve$$default = function resolve(object, label) {
       /*jshint validthis:true */
       var Constructor = this;
 
@@ -7183,35 +7308,35 @@ KJUR.jws.IntDate.intDate2Zulu = function(intDate) {
         return object;
       }
 
-      var promise = new Constructor(lib$es6$promise$$internal$$noop);
-      lib$es6$promise$$internal$$resolve(promise, object);
+      var promise = new Constructor($$$internal$$noop, label);
+      $$$internal$$resolve(promise, object);
       return promise;
-    }
-    var lib$es6$promise$promise$resolve$$default = lib$es6$promise$promise$resolve$$resolve;
-    function lib$es6$promise$promise$reject$$reject(reason) {
+    };
+
+    var $$promise$reject$$default = function reject(reason, label) {
       /*jshint validthis:true */
       var Constructor = this;
-      var promise = new Constructor(lib$es6$promise$$internal$$noop);
-      lib$es6$promise$$internal$$reject(promise, reason);
+      var promise = new Constructor($$$internal$$noop, label);
+      $$$internal$$reject(promise, reason);
       return promise;
-    }
-    var lib$es6$promise$promise$reject$$default = lib$es6$promise$promise$reject$$reject;
+    };
 
-    var lib$es6$promise$promise$$counter = 0;
+    var $$es6$promise$promise$$counter = 0;
 
-    function lib$es6$promise$promise$$needsResolver() {
+    function $$es6$promise$promise$$needsResolver() {
       throw new TypeError('You must pass a resolver function as the first argument to the promise constructor');
     }
 
-    function lib$es6$promise$promise$$needsNew() {
+    function $$es6$promise$promise$$needsNew() {
       throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");
     }
 
-    var lib$es6$promise$promise$$default = lib$es6$promise$promise$$Promise;
+    var $$es6$promise$promise$$default = $$es6$promise$promise$$Promise;
+
     /**
       Promise objects represent the eventual result of an asynchronous operation. The
       primary way of interacting with a promise is through its `then` method, which
-      registers callbacks to receive either a promise's eventual value or the reason
+      registers callbacks to receive either a promise’s eventual value or the reason
       why the promise cannot be fulfilled.
 
       Terminology
@@ -7308,38 +7433,37 @@ KJUR.jws.IntDate.intDate2Zulu = function(intDate) {
 
       @class Promise
       @param {function} resolver
+      @param {String} label optional string for labeling the promise.
       Useful for tooling.
       @constructor
     */
-    function lib$es6$promise$promise$$Promise(resolver) {
-      this._id = lib$es6$promise$promise$$counter++;
+    function $$es6$promise$promise$$Promise(resolver, label) {
+      this._id = $$es6$promise$promise$$counter++;
+      this._label = label;
       this._state = undefined;
       this._result = undefined;
       this._subscribers = [];
 
-      if (lib$es6$promise$$internal$$noop !== resolver) {
-        if (!lib$es6$promise$utils$$isFunction(resolver)) {
-          lib$es6$promise$promise$$needsResolver();
+      if ($$$internal$$noop !== resolver) {
+        if (!$$utils$$isFunction(resolver)) {
+          $$es6$promise$promise$$needsResolver();
         }
 
-        if (!(this instanceof lib$es6$promise$promise$$Promise)) {
-          lib$es6$promise$promise$$needsNew();
+        if (!(this instanceof $$es6$promise$promise$$Promise)) {
+          $$es6$promise$promise$$needsNew();
         }
 
-        lib$es6$promise$$internal$$initializePromise(this, resolver);
+        $$$internal$$initializePromise(this, resolver);
       }
     }
 
-    lib$es6$promise$promise$$Promise.all = lib$es6$promise$promise$all$$default;
-    lib$es6$promise$promise$$Promise.race = lib$es6$promise$promise$race$$default;
-    lib$es6$promise$promise$$Promise.resolve = lib$es6$promise$promise$resolve$$default;
-    lib$es6$promise$promise$$Promise.reject = lib$es6$promise$promise$reject$$default;
-    lib$es6$promise$promise$$Promise._setScheduler = lib$es6$promise$asap$$setScheduler;
-    lib$es6$promise$promise$$Promise._setAsap = lib$es6$promise$asap$$setAsap;
-    lib$es6$promise$promise$$Promise._asap = lib$es6$promise$asap$$asap;
+    $$es6$promise$promise$$Promise.all = $$promise$all$$default;
+    $$es6$promise$promise$$Promise.race = $$promise$race$$default;
+    $$es6$promise$promise$$Promise.resolve = $$promise$resolve$$default;
+    $$es6$promise$promise$$Promise.reject = $$promise$reject$$default;
 
-    lib$es6$promise$promise$$Promise.prototype = {
-      constructor: lib$es6$promise$promise$$Promise,
+    $$es6$promise$promise$$Promise.prototype = {
+      constructor: $$es6$promise$promise$$Promise,
 
     /**
       The primary way of interacting with a promise is through its `then` method,
@@ -7531,27 +7655,30 @@ KJUR.jws.IntDate.intDate2Zulu = function(intDate) {
       @method then
       @param {Function} onFulfilled
       @param {Function} onRejected
+      @param {String} label optional string for labeling the promise.
       Useful for tooling.
       @return {Promise}
     */
-      then: function(onFulfillment, onRejection) {
+      then: function(onFulfillment, onRejection, label) {
         var parent = this;
         var state = parent._state;
 
-        if (state === lib$es6$promise$$internal$$FULFILLED && !onFulfillment || state === lib$es6$promise$$internal$$REJECTED && !onRejection) {
+        if (state === $$$internal$$FULFILLED && !onFulfillment || state === $$$internal$$REJECTED && !onRejection) {
           return this;
         }
 
-        var child = new this.constructor(lib$es6$promise$$internal$$noop);
+        parent._onerror = null;
+
+        var child = new this.constructor($$$internal$$noop, label);
         var result = parent._result;
 
         if (state) {
           var callback = arguments[state - 1];
-          lib$es6$promise$asap$$asap(function(){
-            lib$es6$promise$$internal$$invokeCallback(state, child, callback, result);
+          $$asap$$default(function(){
+            $$$internal$$invokeCallback(state, child, callback, result);
           });
         } else {
-          lib$es6$promise$$internal$$subscribe(parent, child, onFulfillment, onRejection);
+          $$$internal$$subscribe(parent, child, onFulfillment, onRejection);
         }
 
         return child;
@@ -7581,56 +7708,63 @@ KJUR.jws.IntDate.intDate2Zulu = function(intDate) {
 
       @method catch
       @param {Function} onRejection
+      @param {String} label optional string for labeling the promise.
       Useful for tooling.
       @return {Promise}
     */
-      'catch': function(onRejection) {
-        return this.then(null, onRejection);
+      'catch': function(onRejection, label) {
+        return this.then(null, onRejection, label);
       }
     };
-    function lib$es6$promise$polyfill$$polyfill() {
+
+    var $$es6$promise$polyfill$$default = function polyfill() {
       var local;
 
       if (typeof global !== 'undefined') {
-          local = global;
-      } else if (typeof self !== 'undefined') {
-          local = self;
+        local = global;
+      } else if (typeof window !== 'undefined' && window.document) {
+        local = window;
       } else {
-          try {
-              local = Function('return this')();
-          } catch (e) {
-              throw new Error('polyfill failed because global object is unavailable in this environment');
-          }
+        local = self;
       }
 
-      var P = local.Promise;
+      var es6PromiseSupport =
+        "Promise" in local &&
+        // Some of these methods are missing from
+        // Firefox/Chrome experimental implementations
+        "resolve" in local.Promise &&
+        "reject" in local.Promise &&
+        "all" in local.Promise &&
+        "race" in local.Promise &&
+        // Older version of the spec had a resolver object
+        // as the arg rather than a function
+        (function() {
+          var resolve;
+          new local.Promise(function(r) { resolve = r; });
+          return $$utils$$isFunction(resolve);
+        }());
 
-      if (P && Object.prototype.toString.call(P.resolve()) === '[object Promise]' && !P.cast) {
-        return;
+      if (!es6PromiseSupport) {
+        local.Promise = $$es6$promise$promise$$default;
       }
+    };
 
-      local.Promise = lib$es6$promise$promise$$default;
-    }
-    var lib$es6$promise$polyfill$$default = lib$es6$promise$polyfill$$polyfill;
-
-    var lib$es6$promise$umd$$ES6Promise = {
-      'Promise': lib$es6$promise$promise$$default,
-      'polyfill': lib$es6$promise$polyfill$$default
+    var es6$promise$umd$$ES6Promise = {
+      Promise: $$es6$promise$promise$$default,
+      polyfill: $$es6$promise$polyfill$$default
     };
 
     /* global define:true module:true window: true */
     if (typeof define === 'function' && define['amd']) {
-      define(function() { return lib$es6$promise$umd$$ES6Promise; });
+      define(function() { return es6$promise$umd$$ES6Promise; });
     } else if (typeof module !== 'undefined' && module['exports']) {
-      module['exports'] = lib$es6$promise$umd$$ES6Promise;
+      module['exports'] = es6$promise$umd$$ES6Promise;
     } else if (typeof this !== 'undefined') {
-      this['ES6Promise'] = lib$es6$promise$umd$$ES6Promise;
+      this['ES6Promise'] = es6$promise$umd$$ES6Promise;
     }
 
-    lib$es6$promise$polyfill$$default();
+    window.Promise = window.Promise || this['ES6Promise'].Promise; // do this to access Promise directly
 }).call(this);
-
-
 /**
  * @constructor
  */
@@ -7678,13 +7812,7 @@ function DefaultHttpRequest() {
                 xhr.onload = function () {
                     try {
                         if (xhr.status === 200) {
-                            var response = "";
-                            // To support IE9 get the response from xhr.responseText not xhr.response
-                            if (window.XDomainRequest) {
-                                response = xhr.responseText;
-                            } else {
-                                response = xhr.response;
-                            }
+                            var response = xhr.response;
                             if (typeof response === "string") {
                                 response = JSON.parse(response);
                             }
@@ -7801,10 +7929,6 @@ function rand() {
     return ((Date.now() + Math.random()) * Math.random()).toString().replace(".", "");
 }
 
-function resolve(param) {
-    return _promiseFactory.resolve(param);
-}
-
 function error(message) {
     return _promiseFactory.reject(Error(message));
 }
@@ -7905,15 +8029,13 @@ function OidcClient(settings) {
     });
 }
 
-OidcClient.parseOidcResult = parseOidcResult;
-
 OidcClient.prototype.loadMetadataAsync = function () {
     log("OidcClient.loadMetadataAsync");
 
     var settings = this._settings;
 
     if (settings.metadata) {
-        return resolve(settings.metadata);
+        return _promiseFactory.resolve(settings.metadata);
     }
 
     if (!settings.authority) {
@@ -7925,7 +8047,7 @@ OidcClient.prototype.loadMetadataAsync = function () {
             settings.metadata = metadata;
             return metadata;
         }, function (err) {
-            return error("Failed to load metadata (" + err && err.message + ")");
+            return error("Failed to load metadata (" + err.message + ")");
         });
 };
 
@@ -7948,7 +8070,7 @@ OidcClient.prototype.loadX509SigningKeyAsync = function () {
             return error("RSA keys empty");
         }
 
-        return resolve(key.x5c[0]);
+        return _promiseFactory.resolve(key.x5c[0]);
     }
 
     if (settings.jwks) {
@@ -7964,7 +8086,7 @@ OidcClient.prototype.loadX509SigningKeyAsync = function () {
             settings.jwks = jwks;
             return getKeyAsync(jwks);
         }, function (err) {
-            return error("Failed to load signing keys (" + err && err.message + ")");
+            return error("Failed to load signing keys (" + err.message + ")");
         });
     });
 };
@@ -7975,7 +8097,7 @@ OidcClient.prototype.loadUserProfile = function (access_token) {
     return this.loadMetadataAsync().then(function (metadata) {
 
         if (!metadata.userinfo_endpoint) {
-            return error("Metadata does not contain userinfo_endpoint");
+            return _promiseFactory.reject(Error("Metadata does not contain userinfo_endpoint"));
         }
 
         return getJson(metadata.userinfo_endpoint, access_token);
@@ -7986,7 +8108,7 @@ OidcClient.prototype.loadAuthorizationEndpoint = function () {
     log("OidcClient.loadAuthorizationEndpoint");
 
     if (this._settings.authorization_endpoint) {
-        return resolve(this._settings.authorization_endpoint);
+        return _promiseFactory.resolve(this._settings.authorization_endpoint);
     }
 
     if (!this._settings.authority) {
@@ -8145,7 +8267,7 @@ OidcClient.prototype.validateAccessTokenAsync = function (id_token_contents, acc
         return error("at_hash failed to validate");
     }
 
-    return resolve();
+    return _promiseFactory.resolve();
 };
 
 OidcClient.prototype.validateIdTokenAndAccessTokenAsync = function (id_token, nonce, access_token) {
@@ -8223,7 +8345,7 @@ OidcClient.prototype.processResponseAsync = function (queryString) {
         }
     }
 
-    var promise = resolve();
+    var promise = _promiseFactory.resolve();
     if (request_state.oidc && request_state.oauth) {
         promise = client.validateIdTokenAndAccessTokenAsync(result.id_token, request_state.nonce, result.access_token);
     }
@@ -8233,7 +8355,7 @@ OidcClient.prototype.processResponseAsync = function (queryString) {
 
     return promise.then(function (profile) {
         if (profile && settings.filter_protocol_claims) {
-            var remove = ["nonce", "at_hash", "iat", "nbf", "exp", "aud", "iss"];
+            var remove = ["nonce", "at_hash", "iat", "nbf", "exp", "aud", "iss", "idp"];
             remove.forEach(function (key) {
                 delete profile[key];
             });
@@ -8251,14 +8373,10 @@ OidcClient.prototype.processResponseAsync = function (queryString) {
 }
 
     // exports
-    OidcClient._promiseFactory = _promiseFactory;
-    OidcClient._httpRequest = _httpRequest;
     window.OidcClient = OidcClient;
 })();
-(function () {
-
 /*
-* Copyright 2014-2016 Dominick Baier, Brock Allen
+* Copyright 2014 Dominick Baier, Brock Allen
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -8273,9 +8391,8 @@ OidcClient.prototype.processResponseAsync = function (queryString) {
 * limitations under the License.
 */
 
-// globals
-var _promiseFactory = OidcClient._promiseFactory;
-var _httpRequest  = OidcClient._httpRequest;
+var _httpRequest = new DefaultHttpRequest();
+var _promiseFactory = new DefaultPromiseFactory();
 
 function copy(obj, target) {
     target = target || {};
@@ -8301,19 +8418,13 @@ function Token(other) {
         else {
             throw Error("Either access_token or id_token required.");
         }
-        this.scope = other.scope;
+        this.scopes = (other.scope || "").split(" ");
         this.session_state = other.session_state;
     }
     else {
         this.expires_at = 0;
     }
 
-    Object.defineProperty(this, "scopes", {
-        get: function () {
-            return (this.scope || "").split(" ");
-        }
-    });
-    
     Object.defineProperty(this, "expired", {
         get: function () {
             var now = parseInt(Date.now() / 1000);
@@ -8360,19 +8471,15 @@ Token.prototype.toJSON = function () {
     });
 }
 
-function FrameLoader(url, config) {
+function FrameLoader(url) {
     this.url = url;
-    config = config || {};
-    config.cancelDelay = config.cancelDelay || 5000;
-    this.config = config;
 }
 
 FrameLoader.prototype.loadAsync = function (url) {
-    var self = this;
     url = url || this.url;
 
     if (!url) {
-        return _promiseFactory.reject(Error("No url provided"));
+        return _promiseFactory.reject("No url provided");
     }
 
     return _promiseFactory.create(function (resolve, reject) {
@@ -8400,7 +8507,7 @@ FrameLoader.prototype.loadAsync = function (url) {
             }
         }
 
-        var handle = window.setTimeout(cancel, self.config.cancelDelay);
+        var handle = window.setTimeout(cancel, 5000);
         window.addEventListener("message", message, false);
         window.document.body.appendChild(frame);
         frame.src = url;
@@ -8467,7 +8574,7 @@ function configureAutoRenewToken(mgr) {
         mgr.addOnTokenExpiring(function () {
             mgr.renewTokenSilentAsync().catch(function (e) {
                 mgr._callSilentTokenRenewFailed();
-                console.error(e && e.message || "Unknown error");
+                console.error(e.message || e);
             });
         });
 
@@ -8516,9 +8623,7 @@ function configureTokenExpired(mgr) {
 function TokenManager(settings) {
     this._settings = settings || {};
 
-    if (typeof this._settings.persist === 'undefined') {
-        this._settings.persist = true;
-    }
+    this._settings.persist = this._settings.persist || true;
     this._settings.store = this._settings.store || window.localStorage;
     this._settings.persistKey = this._settings.persistKey || "TokenManager.token";
 
@@ -8577,11 +8682,6 @@ function TokenManager(settings) {
             return 0;
         }
     });
-    Object.defineProperty(this, "scope", {
-        get: function () {
-            return this._token && this._token.scope;
-        }
-    });
     Object.defineProperty(this, "scopes", {
         get: function () {
             if (this._token) {
@@ -8600,20 +8700,18 @@ function TokenManager(settings) {
 
     var mgr = this;
     loadToken(mgr);
-    if (mgr._settings.store instanceof window.localStorage.constructor) {
-        window.addEventListener("storage", function (e) {
-            if (e.key === mgr._settings.persistKey) {
-                loadToken(mgr);
+    window.addEventListener("storage", function (e) {
+        if (e.key === mgr._settings.persistKey) {
+            loadToken(mgr);
 
-                if (mgr._token) {
-                    mgr._callTokenObtained();
-                }
-                else {
-                    mgr._callTokenRemoved();
-                }
+            if (mgr._token) {
+                mgr._callTokenObtained();
             }
-        });
-    }
+            else {
+                mgr._callTokenRemoved();
+            }
+        }
+    });
     configureTokenExpired(mgr);
     configureAutoRenewToken(mgr);
 
@@ -8719,22 +8817,20 @@ TokenManager.prototype.removeToken = function () {
 
 TokenManager.prototype.redirectForToken = function () {
     var oidc = this.oidcClient;
-    return oidc.createTokenRequestAsync().then(function (request) {
+    oidc.createTokenRequestAsync().then(function (request) {
         window.location = request.url;
     }, function (err) {
-        console.error("TokenManager.redirectForToken error: " + (err && err.message || "Unknown error"));
-        return _promiseFactory.reject(err);
+        console.error("TokenManager.redirectForToken error: " + (err && err.message || err || ""));
     });
 }
 
 TokenManager.prototype.redirectForLogout = function () {
     var mgr = this;
-    return mgr.oidcClient.createLogoutRequestAsync(mgr.id_token).then(function (url) {
+    mgr.oidcClient.createLogoutRequestAsync(mgr.id_token).then(function (url) {
         mgr.removeToken();
         window.location = url;
     }, function (err) {
-        console.error("TokenManager.redirectForLogout error: " + (err && err.message || "Unknown error"));
-        return _promiseFactory.reject(err);
+        console.error("TokenManager.redirectForLogout error: " + (err && err.message || err || ""));
     });
 }
 
@@ -8749,18 +8845,16 @@ TokenManager.prototype.renewTokenSilentAsync = function () {
     var mgr = this;
 
     if (!mgr._settings.silent_redirect_uri) {
-        return _promiseFactory.reject(Error("silent_redirect_uri not configured"));
+        return _promiseFactory.reject("silent_redirect_uri not configured");
     }
 
     var settings = copy(mgr._settings);
     settings.redirect_uri = settings.silent_redirect_uri;
-    if (!settings.prompt) {
-        settings.prompt = "none";
-    }
+    settings.prompt = "none";
 
     var oidc = new OidcClient(settings);
     return oidc.createTokenRequestAsync().then(function (request) {
-        var frame = new FrameLoader(request.url, { cancelDelay: mgr._settings.silent_renew_timeout });
+        var frame = new FrameLoader(request.url);
         return frame.loadAsync().then(function (hash) {
             return oidc.processResponseAsync(hash).then(function (token) {
                 mgr.saveToken(token);
@@ -8778,119 +8872,7 @@ TokenManager.prototype.processTokenCallbackSilent = function (hash) {
     }
 }
 
-TokenManager.prototype.openPopupForTokenAsync = function (popupSettings) {
-    popupSettings = popupSettings || {};
-    popupSettings.features = popupSettings.features || "location=no,toolbar=no";
-    popupSettings.target = popupSettings.target || "_blank";
-
-    var callback_prefix = "tokenmgr_callback_";
-
-    // this is a shared callback
-    if (!window.openPopupForTokenAsyncCallback) {
-        window.openPopupForTokenAsyncCallback = function (hash) {
-            var result = OidcClient.parseOidcResult(hash);
-            if (result && result.state && window[callback_prefix + result.state]) {
-                window[callback_prefix + result.state](hash);
-            }
-        }
-    }
-
-    var mgr = this;
-    var settings = copy(mgr._settings);
-    settings.redirect_uri = settings.popup_redirect_uri || settings.redirect_uri;
-
-    if (mgr._pendingPopup) {
-        return _promiseFactory.create(function (resolve, reject) {
-            reject(Error("Already a pending popup token request."));
-        });
-    }
-
-    var popup = window.open(settings.redirect_uri, popupSettings.target, popupSettings.features);
-    if (!popup) {
-        return _promiseFactory.create(function (resolve, reject) {
-            reject(Error("Error opening popup."));
-        });
-    }
-
-    mgr._pendingPopup = true;
-
-    function cleanup(name) {
-        if (handle) {
-            window.clearInterval(handle);
-        }
-        popup.close();
-        delete mgr._pendingPopup;
-        if (name) {
-            delete window[name];
-        }
-    }
-
-    var reject_popup;
-    function checkClosed() {
-        if (!popup.window) {
-            cleanup();
-            reject_popup(Error("Popup closed"));
-        }
-    }
-    var handle = window.setInterval(checkClosed, 1000);
-
-    return _promiseFactory.create(function (resolve, reject) {
-        reject_popup = reject;
-
-        var oidc = new OidcClient(settings);
-        oidc.createTokenRequestAsync().then(function (request) {
-
-            var callback_name = callback_prefix + request.request_state.state;
-            window[callback_name] = function (hash) {
-                cleanup(callback_name);
-
-                oidc.processResponseAsync(hash).then(function (token) {
-                    mgr.saveToken(token);
-                    resolve();
-                }, function (err) {
-                    reject(err);
-                });
-            };
-
-            // give the popup 5 seconds to ready itself, otherwise fail
-            var seconds_to_wait = 5;
-            var interval = 500;
-            var total_times = (seconds_to_wait*1000) / interval;
-            var count = 0;
-            function redirectPopup() {
-                if (popup.setUrl) {
-                    popup.setUrl(request.url);
-                }
-                else if (count < total_times) {
-                    count++;
-                    window.setTimeout(redirectPopup, interval);
-                }
-                else {
-                    cleanup(callback_name);
-                    reject(Error("Timeout error on popup"));
-                }
-            }
-            redirectPopup();
-        }, function (err) {
-            cleanup();
-            reject(err);
-        });
-    });
-}
-
-TokenManager.prototype.processTokenPopup = function (hash) {
-    hash = hash || window.location.hash; 
-
-    window.setUrl = function (url) {
-        window.location = url;
-    }
     
-    if (hash) {
-        window.opener.openPopupForTokenAsyncCallback(hash);
-    }
-}
-   
-
     // exports
     window.OidcTokenManager = TokenManager;
 })();

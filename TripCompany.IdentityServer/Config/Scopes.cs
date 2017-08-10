@@ -21,7 +21,8 @@ namespace TripCompany.IdentityServer.Config
                         Type = ScopeType.Resource 
                     },
                     StandardScopes.OpenId,
-                    StandardScopes.Profile
+                    StandardScopes.Profile,
+                    StandardScopes.Address
 
                 };
         }

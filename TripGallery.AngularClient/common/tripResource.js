@@ -5,10 +5,10 @@
         .module("common.services")
         .factory("tripResource",
                 ["$resource",
-                 "appSettings",
-                 tripResource])
+                 "appSettings", 
+                    tripResource])
 
-    function tripResource($resource, appSettings, tokenContainer) {
+    function tripResource($resource, appSettings) {
          return $resource(appSettings.tripGalleryAPI + "/api/trips/:tripId", null,
             {
                 'patch':
