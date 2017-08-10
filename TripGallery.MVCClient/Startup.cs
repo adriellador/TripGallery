@@ -43,7 +43,7 @@ namespace TripGallery.MVCClient
                 RedirectUri = Constants.TripGalleryMVC,
                 SignInAsAuthenticationType = "Cookies",
                 ResponseType = "code id_token token",
-                Scope = "openid profile address gallerymanagement",
+                Scope = "openid profile address gallerymanagement roles",
 
                 Notifications = new OpenIdConnectAuthenticationNotifications()
                 {
@@ -60,6 +60,9 @@ namespace TripGallery.MVCClient
 
                         var subClaim = n.AuthenticationTicket
                             .Identity.FindFirst(IdentityModel.JwtClaimTypes.Subject);
+
+                        var roleClaim = n.AuthenticationTicket
+                            .Identity.FindFirst(IdentityModel.JwtClaimTypes.Role);
 
                         // create a new claims, issuer + sub as unique identifier
                         var nameClaim = new Claim(IdentityModel.JwtClaimTypes.Name,
@@ -83,6 +86,11 @@ namespace TripGallery.MVCClient
                         if (familyNameClaim != null)
                         {
                             newClaimsIdentity.AddClaim(familyNameClaim);
+                        }
+
+                        if (roleClaim != null)
+                        {
+                            newClaimsIdentity.AddClaim(roleClaim);
                         }
 
                         // add the access token so we can access it later on 

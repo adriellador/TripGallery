@@ -18,7 +18,7 @@
                 client_id: "tripgalleryimplicit",
                 redirect_uri:  window.location.protocol + "//" + window.location.host + "/callback.html",
                 response_type: "id_token token",
-                scope: "openid profile address gallerymanagement",               
+                scope: "openid profile address gallerymanagement roles",               
                 authority: "https://localhost:44317/identity"
             };
                     

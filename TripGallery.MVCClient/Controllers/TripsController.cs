@@ -1,5 +1,4 @@
-﻿using IdentityModel.Client;
-using Marvin.JsonPatch;
+﻿using Marvin.JsonPatch;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -11,6 +10,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using IdentityModel.Client;
 using TripGallery.DTO;
 using TripGallery.MVCClient.Helpers;
 using TripGallery.MVCClient.Models;
@@ -27,17 +27,18 @@ namespace TripGallery.MVCClient.Controllers
             {
                 var identity = this.User.Identity as ClaimsIdentity;
                 foreach (var claim in identity.Claims)
-                {
+	            {
                     Debug.WriteLine(claim.Type + " - " + claim.Value);
-                }
+	            }               
             } 
+
             var httpClient = TripGalleryHttpClient.GetClient();
 
             var rspTrips = await httpClient.GetAsync("api/trips").ConfigureAwait(false);
 
             if (rspTrips.IsSuccessStatusCode)
             {
-                var lstTripsAsString = await rspTrips.Content.ReadAsStringAsync().ConfigureAwait(false);
+                var lstTripsAsString = await rspTrips.Content.ReadAsStringAsync().ConfigureAwait(false);          
 
                 var vm = new TripsIndexViewModel();
                 vm.Trips = JsonConvert.DeserializeObject<IList<Trip>>(lstTripsAsString).ToList();
@@ -48,8 +49,8 @@ namespace TripGallery.MVCClient.Controllers
             {
                 return View("Error",
                          new HandleErrorInfo(ExceptionHelper.GetExceptionFromResponse(rspTrips),
-                        "Trips", "Index"));
-            }
+                        "Trips", "Index"));              
+            }        
         }
 
         // GET: Trips/Details/5
@@ -57,7 +58,7 @@ namespace TripGallery.MVCClient.Controllers
         {
             return View();
         }
-
+         
 
 
         // GET: Trips/Create
@@ -72,9 +73,9 @@ namespace TripGallery.MVCClient.Controllers
             // get the access token.
             var token = (User.Identity as ClaimsIdentity).FindFirst("access_token").Value;
 
-            UserInfoClient userInfoClient = new UserInfoClient(
-                   new Uri(Constants.TripGallerySTSUserInfoEndpoint),
-                   token);
+             UserInfoClient userInfoClient = new UserInfoClient(
+                    new Uri(Constants.TripGallerySTSUserInfoEndpoint),
+                    token);
 
             var userInfoResponse = await userInfoClient.GetAsync();
 
@@ -83,15 +84,15 @@ namespace TripGallery.MVCClient.Controllers
                 // create an object to return (dynamic Expando - anonymous 
                 // types won't allow access to their properties from the view)
                 dynamic addressInfo = new ExpandoObject();
-                addressInfo.Address = userInfoResponse.Claims.First(c => c.Item1 == "address").Item2;
+                addressInfo.Address = userInfoResponse.Claims.First(c => c.Item1 == "address").Item2; 
 
                 return View(addressInfo);
             }
             else
-            {
+            {          
                 var exception = new Exception("Problem getting your address.  Please contact your administrator.");
-                return View("Error", new HandleErrorInfo(exception, "Trips", "Album"));
-            }
+                return View("Error", new HandleErrorInfo(exception, "Trips", "Album"));    
+            }             
         }
 
         // POST: Trips/Create
@@ -100,7 +101,7 @@ namespace TripGallery.MVCClient.Controllers
         {
             try
             {
-
+ 
                 byte[] uploadedImage = new byte[vm.MainImage.InputStream.Length];
                 vm.MainImage.InputStream.Read(uploadedImage, 0, uploadedImage.Length);
 
@@ -110,30 +111,30 @@ namespace TripGallery.MVCClient.Controllers
 
                 var serializedTrip = JsonConvert.SerializeObject(vm.Trip);
 
-                var response = await httpClient.PostAsync("api/trips",
+                var response = await httpClient.PostAsync("api/trips", 
                     new StringContent(serializedTrip, System.Text.Encoding.Unicode, "application/json")).ConfigureAwait(false);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return RedirectToAction("Index", "Trips");
+                    return RedirectToAction("Index", "Trips");                        
                 }
                 else
                 {
-                    return View("Error",
-                            new HandleErrorInfo(ExceptionHelper.GetExceptionFromResponse(response),
-                            "Trips", "Create"));
-                }
+                    return View("Error", 
+                            new HandleErrorInfo(ExceptionHelper.GetExceptionFromResponse(response), 
+                            "Trips", "Create"));    
+                } 
             }
-            catch (Exception ex)
-            {
-                return View("Error", new HandleErrorInfo(ex, "Trips", "Create"));
+            catch  (Exception ex)
+            {  
+                return View("Error", new HandleErrorInfo(ex, "Trips", "Create"));    
             }
         }
 
-
+     
         public async Task<ActionResult> SwitchPrivacyLevel(Guid id, bool isPublic)
         {
-
+            
             // create a patchdocument to change the privacy level of this trip
 
             JsonPatchDocument<Trip> tripPatchDoc = new JsonPatchDocument<Trip>();
@@ -148,14 +149,14 @@ namespace TripGallery.MVCClient.Controllers
             if (rspPatchTrip.IsSuccessStatusCode)
             {
                 // the patch was succesful.  Reload.
-                return RedirectToAction("Index", "Trips");
+                return RedirectToAction("Index", "Trips");                          
             }
             else
             {
                 return View("Error",
                          new HandleErrorInfo(ExceptionHelper.GetExceptionFromResponse(rspPatchTrip),
-                        "Trips", "SwitchPrivacyLevel"));
+                        "Trips", "SwitchPrivacyLevel"));              
             }
-        }
+        } 
     }
 }

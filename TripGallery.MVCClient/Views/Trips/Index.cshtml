@@ -7,7 +7,7 @@
 <h2 class="leftMarginDefault">My Trip Gallery</h2>
 
 
-@if (User.Identity.IsAuthenticated)
+@if (User.Identity.IsAuthenticated && User.IsInRole("PayingUser"))
 {
 <div class="btn btn-default leftMarginDefault bottomMarginDefault">@Html.ActionLink("Add a Trip", "Create")</div> 
 }

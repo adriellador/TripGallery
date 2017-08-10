@@ -21,7 +21,7 @@ namespace TripGallery.API.Controllers
         {
             try
             {
-                var ownerId = TokenIdentityHelper.GetOwnerIdFromToken();
+                string ownerId = TokenIdentityHelper.GetOwnerIdFromToken();
 
                 using (var uow = new GetPictures(ownerId, tripId))
                 {
@@ -57,7 +57,8 @@ namespace TripGallery.API.Controllers
         {
             try
             {
-                var ownerId = TokenIdentityHelper.GetOwnerIdFromToken();
+
+                string ownerId = TokenIdentityHelper.GetOwnerIdFromToken();
 
                 using (var uow = new CreatePicture(ownerId, tripId))
                 {
@@ -90,15 +91,17 @@ namespace TripGallery.API.Controllers
             }
         }
 
-         
+
+        // TODO: is the user allowed to delete?
         [Route("api/trips/{tripId}/pictures/{pictureId}")]
         [HttpDelete]
         public IHttpActionResult Delete(Guid tripId, Guid pictureId)
         {
             try
             {
-                var ownerId = TokenIdentityHelper.GetOwnerIdFromToken();
-          
+                // the user can delete.  But can he also delete THIS picture?
+                string ownerId = TokenIdentityHelper.GetOwnerIdFromToken();
+
                 using (var uow = new DeletePicture(ownerId, tripId, pictureId))
                 {
                     var uowResult = uow.Execute();

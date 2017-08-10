@@ -18,14 +18,14 @@ namespace TripGallery.API
         public void Configuration(IAppBuilder app)
         {
             JwtSecurityTokenHandler.InboundClaimTypeMap = new Dictionary<string, string>();
+
             app.UseIdentityServerBearerTokenAuthentication(
-                 new IdentityServerBearerTokenAuthenticationOptions
-                 {
-                     Authority = Constants.TripGallerySTS,
-                     RequiredScopes = new[] { "gallerymanagement" },
-                 });
-
-
+             new IdentityServerBearerTokenAuthenticationOptions
+             {
+                 Authority = Constants.TripGallerySTS,
+                 RequiredScopes = new[] { "gallerymanagement" } 
+             });
+            
             var config = WebApiConfig.Register();
             
             app.UseWebApi(config);
@@ -45,7 +45,8 @@ namespace TripGallery.API
                 op => op.ResolveUsing(typeof(InjectImageBaseForPictureResolver)));
 
             Mapper.CreateMap<DTO.Picture,
-              Repository.Entities.Picture>();        
+              Repository.Entities.Picture>();
+        
 
             Mapper.CreateMap<DTO.Trip,
                 Repository.Entities.Trip>().ForMember(dest => dest.MainPictureUri,
@@ -65,6 +66,7 @@ namespace TripGallery.API
             .ForMember(o => o.MainPictureUri, o => o.Ignore())
             .ForMember(o => o.Pictures, o => o.Ignore())
             .ForMember(o => o.OwnerId, o => o.Ignore());
+
 
             Mapper.AssertConfigurationIsValid();
         }

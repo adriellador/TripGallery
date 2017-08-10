@@ -1,32 +1,36 @@
-﻿using Owin;
+﻿using IdentityServer3.Core.Configuration;
+using IdentityServer3.Core.Services.Default;
+using IdentityServer3.Core.Services.InMemory;
+using Owin;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
-using IdentityServer3.Core.Configuration;
 using TripCompany.IdentityServer.Config;
-using IdentityServer3.Core.Services.Default;
 
 namespace TripCompany.IdentityServer
 {
     public class Startup
     {
         public void Configuration(IAppBuilder app)
-        { 
+        {
             app.Map("/identity", idsrvApp =>
             {
                 var corsPolicyService = new DefaultCorsPolicyService()
                 {
                     AllowAll = true
                 };
+
                 var idServerServiceFactory = new IdentityServerServiceFactory()
                                 .UseInMemoryClients(Clients.Get())
                                 .UseInMemoryScopes(Scopes.Get())
                                 .UseInMemoryUsers(Users.Get());
 
-                idServerServiceFactory.CorsPolicyService = new Registration<IdentityServer3.Core.Services.ICorsPolicyService>(corsPolicyService);
+                idServerServiceFactory.CorsPolicyService = new
+                    Registration<IdentityServer3.Core.Services.ICorsPolicyService>(corsPolicyService);
+
                 var options = new IdentityServerOptions
                 {
                     Factory = idServerServiceFactory,
@@ -38,7 +42,7 @@ namespace TripCompany.IdentityServer
                 };
 
                 idsrvApp.UseIdentityServer(options);
-            });                      
+            });
         }
 
 

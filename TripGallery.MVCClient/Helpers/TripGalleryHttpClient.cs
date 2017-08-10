@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using IdentityModel.Client;
 
 namespace TripGallery.MVCClient.Helpers
 {
@@ -15,15 +16,15 @@ namespace TripGallery.MVCClient.Helpers
 
         public static HttpClient GetClient()
         { 
-            HttpClient client = new HttpClient(); 
-           
-            client.BaseAddress = new Uri(Constants.TripGalleryAPI);
+            HttpClient client = new HttpClient();
 
             var token = (HttpContext.Current.User.Identity as ClaimsIdentity).FindFirst("access_token");
-            if(token != null)
+            if (token != null)
             {
                 client.SetBearerToken(token.Value);
             }
+
+            client.BaseAddress = new Uri(Constants.TripGalleryAPI);
 
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(

@@ -1,98 +1,92 @@
-﻿using System;
+﻿using IdentityServer3.Core.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using IdentityServer3.Core.Models;
 using TripGallery;
 
 namespace TripCompany.IdentityServer.Config
 {
     public static class Clients
     {
-        // AllowedScopes By default a client has no access to any scopes - either specify the scopes explicitly here(recommended) - or set AllowAccessToAllScopes to true.
         public static IEnumerable<Client> Get()
         {
             return new[]
-            {
-                new Client
+             { 
+                 new Client 
                 {
-                    ClientId = "tripgalleryclientcredentials",
-                    ClientName = "Trip Gallery (Client Credentials)",
-                    Flow = Flows.ClientCredentials,
+                     ClientId = "tripgalleryclientcredentials",
+                     ClientName = "Trip Gallery (Client Credentials)",
+                     Flow = Flows.ClientCredentials,  
+                     AllowAccessToAllScopes = true,
+
                     ClientSecrets = new List<Secret>()
                     {
-                        new Secret(Constants.TripGalleryClientSecret.Sha256())
-                    },
-                    AllowAccessToAllScopes = true,
-                    AllowedScopes = new List<string>
-                    {
-                        "gallerymanagement"
+                        new Secret(TripGallery.Constants.TripGalleryClientSecret.Sha256())
                     }
-                },
-                 new Client
+                    
+                }
+                ,
+                new Client 
+                {
+                    ClientId = "tripgalleryauthcode",
+                    ClientName = "Trip Gallery (Authorization Code)",
+                    Flow = Flows.AuthorizationCode, 
+                    AllowAccessToAllScopes = true,
+
+                    // redirect = URI of our callback controller in the MVC application
+                    RedirectUris = new List<string>
+                    { 
+                        TripGallery.Constants.TripGalleryMVCSTSCallback 
+                    },           
+
+                     ClientSecrets = new List<Secret>()
+                    {
+                        new Secret(TripGallery.Constants.TripGalleryClientSecret.Sha256())
+                    }                    
+                } ,
+                new Client 
                 {
                     ClientId = "tripgalleryimplicit",
                     ClientName = "Trip Gallery (Implicit)",
-                    Flow = Flows.Implicit,
+                    Flow = Flows.Implicit, 
                     AllowAccessToAllScopes = true,
-                    AllowedScopes = new List<string>
-                    {
-                        "gallerymanagement"
-                    },
+
+                    // redirect = URI of the Angular application
                     RedirectUris = new List<string>
+                    { 
+                        TripGallery.Constants.TripGalleryAngular + "callback.html" 
+                    }            
+                }
+                ,
+                new Client 
+                {
+                    ClientId = "tripgalleryropc",
+                    ClientName = "Trip Gallery (Resource Owner Password Credentials)",
+                    Flow = Flows.ResourceOwner, 
+                    AllowAccessToAllScopes = true,
+
+                    ClientSecrets = new List<Secret>()
                     {
-                        Constants.TripGalleryAngular + "callback.html"
-                    }
+                        new Secret(TripGallery.Constants.TripGalleryClientSecret.Sha256())
+                    }                    
                 },
-                 new Client
-                 {
-                     ClientId = "tripgalleryauthcode",
-                     ClientName = "Trip Gallery (Authirization Code)",
-                     Flow = Flows.AuthorizationCode,
-                     AllowAccessToAllScopes = true,
-                     AllowedScopes = new List<string>
-                     {
-                        "gallerymanagement"
-                     },
-                     RedirectUris = new List<string>
-                     {
-                        Constants.TripGalleryMVCSTSCallback
-                     },
-                     ClientSecrets = new List<Secret>()
-                     {
-                         new Secret(Constants.TripGalleryClientSecret.Sha256())
+                new Client 
+                {
+                    ClientId = "tripgalleryhybrid",
+                    ClientName = "Trip Gallery (Hybrid)",
+                    Flow = Flows.Hybrid, 
+                    AllowAccessToAllScopes = true,
 
-                     }
-                 },
-                 new Client
-                 {
-                     ClientId = "tripgalleryropc",
-                     ClientName = "Trip Gallery (REsource Owner Password Credentials)",
-                     Flow = Flows.ResourceOwner,
-                     AllowedScopes = new List<string>
-                     {
-                         "gallerymanagement"
-                     },
-                     AllowAccessToAllScopes = true,
-                     ClientSecrets = new List<Secret>()
-                     {
-                         new Secret(Constants.TripGalleryClientSecret.Sha256())
-                     }
+                    // redirect = URI of the MVC application
+                    RedirectUris = new List<string>
+                    { 
+                        TripGallery.Constants.TripGalleryMVC 
+                    } 
+                }  
 
-                 },
-                 new Client
-                 {
-                     ClientId = "tripgalleryhybrid",
-                     ClientName = "Trip Gallery (Hybrid)",
-                     Flow = Flows.Hybrid,
-                     AllowAccessToAllScopes =true,
-                     RedirectUris = new List<string>
-                     {
-                         Constants.TripGalleryMVC
-                     }
-                 }
-            };
+             };
         }
     }
 }
