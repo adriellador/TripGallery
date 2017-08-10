@@ -21,8 +21,10 @@ namespace TripGallery.API.Controllers
         public IHttpActionResult Get()
         {
             try
-            {            
-                using (var uow = new GetTrips(null))
+            {
+                var ownerID = TokenIdentityHelper.GetOwnerIdFromToken();
+                   
+                using (var uow = new GetTrips(ownerID))
                 {
                     var uowResult = uow.Execute();
 
@@ -49,8 +51,9 @@ namespace TripGallery.API.Controllers
         public IHttpActionResult Get(Guid tripId)
         {
             try
-            { 
-                using (var uow = new GetTrip(null, tripId))
+            {
+                var ownerId = TokenIdentityHelper.GetOwnerIdFromToken();
+                using (var uow = new GetTrip(ownerId, tripId))
                     {
                         var uowResult = uow.Execute();
 
@@ -84,9 +87,9 @@ namespace TripGallery.API.Controllers
         public IHttpActionResult Post([FromBody]DTO.TripForCreation tripForCreation)
         {
             try
-            {                 
-          
-                using (var uow = new CreateTrip(null))
+            {
+                var ownerId = TokenIdentityHelper.GetOwnerIdFromToken();
+                using (var uow = new CreateTrip(ownerId))
                 {
                     var uowResult = uow.Execute(tripForCreation);
 
@@ -122,8 +125,8 @@ namespace TripGallery.API.Controllers
             try
             {
 
-             
-                using (var uow = new PartiallyUpdateTrip(null, tripId))
+                var ownerId = TokenIdentityHelper.GetOwnerIdFromToken();
+                using (var uow = new PartiallyUpdateTrip(ownerId, tripId))
                 {
                     var uowResult = uow.Execute(tripPatchDocument);
 

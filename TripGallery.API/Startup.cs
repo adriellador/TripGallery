@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using TripGallery.API.Helpers;
 using System.Web.Http.Cors;
 using IdentityServer3.AccessTokenValidation;
+using System.IdentityModel.Tokens;
 
 namespace TripGallery.API
 {
@@ -16,6 +17,7 @@ namespace TripGallery.API
 
         public void Configuration(IAppBuilder app)
         {
+            JwtSecurityTokenHandler.InboundClaimTypeMap = new Dictionary<string, string>();
             app.UseIdentityServerBearerTokenAuthentication(
                  new IdentityServerBearerTokenAuthenticationOptions
                  {

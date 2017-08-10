@@ -43,7 +43,7 @@ namespace TripGallery.MVCClient
                 RedirectUri = Constants.TripGalleryMVC,
                 SignInAsAuthenticationType = "Cookies",
                 ResponseType = "code id_token token",
-                Scope = "openid profile address",
+                Scope = "openid profile address gallerymanagement",
 
                 Notifications = new OpenIdConnectAuthenticationNotifications()
                 {

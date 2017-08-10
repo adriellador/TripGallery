@@ -21,8 +21,9 @@ namespace TripGallery.API.Controllers
         {
             try
             {
-          
-                using (var uow = new GetPictures(null, tripId))
+                var ownerId = TokenIdentityHelper.GetOwnerIdFromToken();
+
+                using (var uow = new GetPictures(ownerId, tripId))
                 {
                     var uowResult = uow.Execute();
 
@@ -55,8 +56,10 @@ namespace TripGallery.API.Controllers
         public IHttpActionResult Post(Guid tripId, [FromBody]DTO.PictureForCreation pictureForCreation)
         {
             try
-            { 
-                using (var uow = new CreatePicture(null, tripId))
+            {
+                var ownerId = TokenIdentityHelper.GetOwnerIdFromToken();
+
+                using (var uow = new CreatePicture(ownerId, tripId))
                 {
                     var uowResult = uow.Execute(pictureForCreation);
 
@@ -94,8 +97,9 @@ namespace TripGallery.API.Controllers
         {
             try
             {
+                var ownerId = TokenIdentityHelper.GetOwnerIdFromToken();
           
-                using (var uow = new DeletePicture(null, tripId, pictureId))
+                using (var uow = new DeletePicture(ownerId, tripId, pictureId))
                 {
                     var uowResult = uow.Execute();
 

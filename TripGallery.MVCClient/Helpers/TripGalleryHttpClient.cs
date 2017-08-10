@@ -19,6 +19,12 @@ namespace TripGallery.MVCClient.Helpers
            
             client.BaseAddress = new Uri(Constants.TripGalleryAPI);
 
+            var token = (HttpContext.Current.User.Identity as ClaimsIdentity).FindFirst("access_token");
+            if(token != null)
+            {
+                client.SetBearerToken(token.Value);
+            }
+
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));
