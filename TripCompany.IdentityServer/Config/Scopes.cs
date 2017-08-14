@@ -37,7 +37,8 @@ namespace TripCompany.IdentityServer.Config
                         {
                             new ScopeClaim("role", true)
                         }
-                    }
+                    },
+                    StandardScopes.OfflineAccess
                 };
         }
     }

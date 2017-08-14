@@ -23,7 +23,7 @@ namespace TripGallery.API
              new IdentityServerBearerTokenAuthenticationOptions
              {
                  Authority = Constants.TripGallerySTS,
-                 RequiredScopes = new[] { "gallerymanagement" } 
+                 RequiredScopes = new[] { "gallerymanagement" },
              });
             
             var config = WebApiConfig.Register();

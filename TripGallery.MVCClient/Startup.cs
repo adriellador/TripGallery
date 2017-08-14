@@ -14,6 +14,7 @@ using System.Web;
 using System.Web.Helpers;
 using IdentityModel.Client;
 using TripGallery.MVCClient.Helpers;
+using Microsoft.IdentityModel.Protocols;
 
 
 [assembly: OwinStartup(typeof(TripGallery.MVCClient.Startup))]
@@ -32,7 +33,9 @@ namespace TripGallery.MVCClient
 
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
-                AuthenticationType = "Cookies"
+                AuthenticationType = "Cookies",
+                ExpireTimeSpan = new TimeSpan(0, 30, 0),
+                SlidingExpiration = true
             });
 
             app.UseOpenIdConnectAuthentication(new OpenIdConnectAuthenticationOptions
@@ -43,7 +46,9 @@ namespace TripGallery.MVCClient
                 RedirectUri = Constants.TripGalleryMVC,
                 SignInAsAuthenticationType = "Cookies",
                 ResponseType = "code id_token token",
-                Scope = "openid profile address gallerymanagement roles",
+                Scope = "openid profile address gallerymanagement roles offline_access",
+                UseTokenLifetime = false,
+                PostLogoutRedirectUri = Constants.TripGalleryMVC,
 
                 Notifications = new OpenIdConnectAuthenticationNotifications()
                 {
@@ -93,18 +98,48 @@ namespace TripGallery.MVCClient
                             newClaimsIdentity.AddClaim(roleClaim);
                         }
 
-                        // add the access token so we can access it later on 
-                        newClaimsIdentity.AddClaim(
-                            new Claim("access_token", n.ProtocolMessage.AccessToken));
+                        // request a refresh token
+                        var tokenClientForRefreshToken = new TokenClient(
+                                   Constants.TripGallerySTSTokenEndpoint,
+                                   "tripgalleryhybrid",
+                                   Constants.TripGalleryClientSecret);
+
+                        var refreshResponse = await
+                            tokenClientForRefreshToken.RequestAuthorizationCodeAsync(
+                            n.ProtocolMessage.Code,
+                            Constants.TripGalleryMVC);
+
+                        var expirationDateAsRoundtripString
+                            = DateTime.SpecifyKind(DateTime.UtcNow.AddSeconds(refreshResponse.ExpiresIn)
+                            , DateTimeKind.Utc).ToString("o");
+
+
+                        newClaimsIdentity.AddClaim(new Claim("id_token", n.ProtocolMessage.IdToken));
+                        newClaimsIdentity.AddClaim(new Claim("refresh_token", refreshResponse.RefreshToken));
+                        newClaimsIdentity.AddClaim(new Claim("access_token", refreshResponse.AccessToken));
+                        newClaimsIdentity.AddClaim(new Claim("expires_at", expirationDateAsRoundtripString));
 
                         // create a new authentication ticket, overwriting the old one.
                         n.AuthenticationTicket = new AuthenticationTicket(
                                                  newClaimsIdentity,
                                                  n.AuthenticationTicket.Properties);
+                    },
+                    RedirectToIdentityProvider = async n =>
+                    {
+                        // get id token to add as id token hint
+                        if (n.ProtocolMessage.RequestType == OpenIdConnectRequestType.LogoutRequest)
+                        {
+                            var identityTokenHint = n.OwinContext.Authentication.User.FindFirst("id_token");
+
+                            if (identityTokenHint != null)
+                            {
+                                n.ProtocolMessage.IdTokenHint = identityTokenHint.Value;
+                            }
+
+                        }
                     }
                 }
             });
-
         }
     }
 }

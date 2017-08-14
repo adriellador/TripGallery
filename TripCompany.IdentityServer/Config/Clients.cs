@@ -52,12 +52,21 @@ namespace TripCompany.IdentityServer.Config
                     ClientName = "Trip Gallery (Implicit)",
                     Flow = Flows.Implicit, 
                     AllowAccessToAllScopes = true,
+                    IdentityTokenLifetime = 10,
+                    AccessTokenLifetime = 120,
+                    RequireConsent = false,
 
                     // redirect = URI of the Angular application
                     RedirectUris = new List<string>
                     { 
-                        TripGallery.Constants.TripGalleryAngular + "callback.html" 
-                    }            
+                        TripGallery.Constants.TripGalleryAngular + "callback.html",
+                        // for silent refresh
+                        TripGallery.Constants.TripGalleryAngular + "silentrefreshframe.html" 
+                    },     
+                    PostLogoutRedirectUris = new List<string>()
+                    {
+                         TripGallery.Constants.TripGalleryAngular + "index.html"
+                    }
                 }
                 ,
                 new Client 
@@ -77,13 +86,24 @@ namespace TripCompany.IdentityServer.Config
                     ClientId = "tripgalleryhybrid",
                     ClientName = "Trip Gallery (Hybrid)",
                     Flow = Flows.Hybrid, 
-                    AllowAccessToAllScopes = true,
-
+                    AllowAccessToAllScopes = true,                   
+                    IdentityTokenLifetime = 10,
+                    AccessTokenLifetime = 120,
+                    RequireConsent = false,
+                                   
                     // redirect = URI of the MVC application
                     RedirectUris = new List<string>
                     { 
                         TripGallery.Constants.TripGalleryMVC 
-                    } 
+                    }, 
+                    PostLogoutRedirectUris = new List<string>()
+                    {
+                         TripGallery.Constants.TripGalleryMVC 
+                    }, 
+                    ClientSecrets = new List<Secret>()
+                    {
+                        new Secret(TripGallery.Constants.TripGalleryClientSecret.Sha256())
+                    }  
                 }  
 
              };

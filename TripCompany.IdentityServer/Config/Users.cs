@@ -25,7 +25,7 @@ namespace TripCompany.IdentityServer.Config
                         new Claim(Constants.ClaimTypes.GivenName, "Kevin"),
                         new Claim(Constants.ClaimTypes.FamilyName, "Dockx"),
                         new Claim(Constants.ClaimTypes.Address, "1, Main Street, Antwerp, Belgium"),
-                        new Claim("role", "PayingUser")
+                        new Claim("role", "PayingUser")                  
                     }
 	             }
 	            ,

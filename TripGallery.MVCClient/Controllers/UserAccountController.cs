@@ -13,5 +13,11 @@ namespace TripGallery.MVCClient.Controllers
             Request.GetOwinContext().Authentication.SignOut();
             return Redirect("/");
         }
+
+        public ActionResult LocalLogout()
+        {
+            Request.GetOwinContext().Authentication.SignOut();
+            return Redirect("/");
+        }
     }
 }
